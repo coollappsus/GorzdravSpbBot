@@ -1,0 +1,13 @@
+services:
+  app:
+    image: gorzdrav_spb_bot
+    container_name: gorzdrav-spb-app
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    networks:
+      - my_network
+
+networks:
+  my_network:
+    external: true
