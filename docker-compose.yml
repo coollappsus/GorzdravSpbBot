@@ -5,9 +5,28 @@ services:
     build:
       context: ./
       dockerfile: ./Dockerfile
+    depends_on:
+      - dummy
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: my_user
+      DB_PASSWORD: my_password
+      DB_NAME: gorzdrav
+
     networks:
-      - my_network
+      shared:
+          aliases:
+            - db
+      # dummy-сервис нужен только чтобы docker-compose видел в своих сетях хотя бы один сервис,
+      # можно указать любой образ, он не будет реально использоваться.
+  dummy:
+    image: busybox
+    command: [ "sh", "-c", "while true; do sleep 3600; done" ]
+    networks:
+      - shared
 
 networks:
-  my_network:
+  shared:
     external: true
+    name: shared_db_net
