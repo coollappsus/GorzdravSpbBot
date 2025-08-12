@@ -41,8 +41,5 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Pull latest images
-        run: docker compose pull
-
-      - name: Deploy services
-        run: docker compose up -d --force-recreate
+      - name: Build & deploy via docker-compose
+        run: docker compose up -d --build --pull always --force-recreate
