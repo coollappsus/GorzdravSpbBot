@@ -38,11 +38,11 @@ jobs:
     runs-on: self-hosted # Запускаем на раннере, который настроили до этого.
     needs: test # Запускаем только если джоба test прошла успешно
     steps:
-      - name: checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v4
-      - name: docker-compose down
-        run: docker compose down
-      - name: docker rmi
-        run: docker rmi $(docker images -a -q)
-      - name: docker-compose up
-        run: docker compose up -d
+
+      - name: Pull latest images
+        run: docker compose pull
+
+      - name: Deploy services
+        run: docker compose up -d --force-recreate
