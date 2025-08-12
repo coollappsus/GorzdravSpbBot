@@ -2,6 +2,7 @@ services:
   app:
     image: gorzdrav_spb_bot
     container_name: gorzdrav-spb-app
+    restart: unless-stopped
     build:
       context: ./
       dockerfile: ./Dockerfile
@@ -13,10 +14,9 @@ services:
       DB_USER: my_user
       DB_PASSWORD: my_password
       DB_NAME: gorzdrav
-
     networks:
       shared:
-          aliases:
+        aliases:
             - db
       # dummy-сервис нужен только чтобы docker-compose видел в своих сетях хотя бы один сервис,
       # можно указать любой образ, он не будет реально использоваться.
