@@ -27,7 +27,7 @@ public class UserChecker {
         if (newUsers.isEmpty()) return;
 
         StringBuilder sb = new StringBuilder();
-        sb.append(newUsers.size()).append("New users found\n");
+        sb.append(newUsers.size()).append("🎉🎉New users found🎉🎉\n");
         for (User user : newUsers) {
             sb.append(user.getUserName()).append("\n");
         }
