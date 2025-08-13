@@ -14,6 +14,8 @@ services:
       DB_USER: my_user
       DB_PASSWORD: my_password
       DB_NAME: gorzdrav
+      JAVA_TOOL_OPTIONS: -Duser.timezone=Europe/Moscow
+      TZ: Europe/Moscow
     networks:
       shared:
         aliases:
