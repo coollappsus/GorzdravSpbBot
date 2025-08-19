@@ -41,5 +41,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Cleanup Docker
+        run: |
+          docker builder prune --all --force
+          docker image prune --all --force
+          docker container prune --force
+          docker volume prune --force
+
       - name: Build & deploy via docker-compose
         run: docker compose up -d --build --pull always --force-recreate
