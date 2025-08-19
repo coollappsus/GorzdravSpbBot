@@ -7,8 +7,8 @@ import lombok.Getter;
 @Getter
 public enum TimePreference {
     EARLY("Утро"),   // с 08:00 по 12:00
-    MID("День"),     // 12:00–16:00
-    LATE("Вечер");     // 16:00–20:00
+    MID("День"),     // 12:00–17:00
+    LATE("Вечер");     // 17:00–20:00
 
     private String additionalName;
 }

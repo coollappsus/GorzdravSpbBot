@@ -56,8 +56,8 @@ public class AppointmentChecker {
                         return switch (task.getTimePreference()) {
                             case EARLY -> visitLocalTime.isBefore(LocalTime.NOON);
                             case MID -> !visitLocalTime.isBefore(LocalTime.NOON)
-                                    && visitLocalTime.isBefore(LocalTime.of(16, 0));
-                            case LATE -> !visitLocalTime.isBefore(LocalTime.of(16, 0));
+                                    && visitLocalTime.isBefore(LocalTime.of(17, 0));
+                            case LATE -> !visitLocalTime.isBefore(LocalTime.of(17, 0));
                         };
                     }).sorted(Comparator.comparing(Appointment::visitStart))
                     .findAny()
