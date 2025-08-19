@@ -10,5 +10,5 @@ public enum TimePreference {
     MID("День"),     // 12:00–17:00
     LATE("Вечер");     // 17:00–20:00
 
-    private String additionalName;
+    private final String additionalName;
 }
