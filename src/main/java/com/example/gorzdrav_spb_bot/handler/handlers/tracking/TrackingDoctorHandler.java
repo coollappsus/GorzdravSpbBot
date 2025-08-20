@@ -24,8 +24,8 @@ public class TrackingDoctorHandler implements TelegramUpdateMessageHandler {
     private static final String RESPONSE_TEXT_APPOINTMENT = """
             Выберите предпочитаемое время для записи.
             Утро(с 8:00 до 12:00)
-            День(С 12:00 до 16:00)
-            Вечер(с 16:00 до 20:00)
+            День(С 12:00 до 17:00)
+            Вечер(с 17:00 до 20:00)
             Если талона с предпочитаемым временем не будет найдено, будет произведена запись на любое свободное время.
             """;
 
