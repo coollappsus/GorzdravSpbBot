@@ -2,7 +2,7 @@ package com.example.gorzdrav_spb_bot.handler.handlers.tracking;
 
 import com.example.gorzdrav_spb_bot.handler.TelegramUpdateMessageHandler;
 import com.example.gorzdrav_spb_bot.handler.dao.UserState;
-import com.example.gorzdrav_spb_bot.handler.handlers.create.CreateAppointmentSpecialtyHandler;
+import com.example.gorzdrav_spb_bot.handler.util.ContextUtil;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.GorzdravService;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.District;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.LPU;
@@ -23,14 +23,11 @@ public class TrackingLpuHandler implements TelegramUpdateMessageHandler {
     private final GorzdravService gorzdravService;
     private final KeyboardFactory keyboardFactory;
     private final TrackingSpecialtyHandler specialtyHandler;
+    private final ContextUtil contextUtil;
 
     @Override
     public BotApiMethod<?> processMessage(Message message, UserState userState) {
-        District district = userState.getContext().stream()
-                .filter(d -> d instanceof District)
-                .map(d -> (District) d)
-                .findFirst()
-                .orElseThrow();
+        District district = contextUtil.getContextObject(userState, District.class);
         String lpuName = message.getText().substring(0, message.getText().indexOf(" по адресу"));
         LPU lpu = gorzdravService.getLPUs(district).stream()
                 .filter(l -> l.lpuShortName().equals(lpuName))

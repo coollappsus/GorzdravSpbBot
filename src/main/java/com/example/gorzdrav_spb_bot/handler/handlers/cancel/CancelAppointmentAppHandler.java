@@ -33,16 +33,8 @@ public class CancelAppointmentAppHandler implements TelegramUpdateMessageHandler
 
     @Override
     public BotApiMethod<?> processMessage(Message message, UserState userState) {
-        LPU lpu = userState.getContext().stream()
-                .filter(l -> l instanceof LPU)
-                .map(l -> (LPU) l)
-                .findFirst()
-                .orElseThrow();
-        MedicalCard medicalCard = userState.getContext().stream()
-                .filter(mc -> mc instanceof MedicalCard)
-                .map(mc -> (MedicalCard) mc)
-                .findFirst()
-                .orElseThrow();
+        LPU lpu = contextUtil.getContextObject(userState, LPU.class);
+        MedicalCard medicalCard = contextUtil.getContextObject(userState, MedicalCard.class);
         String appointmentId = message.getText().substring(0, message.getText().indexOf(". "));
         var fullAppointment = gorzdravService.getFullAppointments(lpu, medicalCard.getPatientId()).stream()
                 .filter(fa -> fa.appointmentId().equals(appointmentId))

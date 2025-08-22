@@ -2,6 +2,7 @@ package com.example.gorzdrav_spb_bot.handler.handlers.create;
 
 import com.example.gorzdrav_spb_bot.handler.TelegramUpdateMessageHandler;
 import com.example.gorzdrav_spb_bot.handler.dao.UserState;
+import com.example.gorzdrav_spb_bot.handler.util.ContextUtil;
 import com.example.gorzdrav_spb_bot.model.MedicalCard;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.GorzdravService;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.Appointment;
@@ -36,19 +37,12 @@ public class CreateAppointmentChooseAppHandler implements TelegramUpdateMessageH
     private final GorzdravService gorzdravService;
     private final KeyboardFactory keyboardFactory;
     private final CreateAppointmentConfirmationHandler createAppointmentConfirmationHandler;
+    private final ContextUtil contextUtil;
 
     @Override
     public BotApiMethod<?> processMessage(Message message, UserState userState) {
-        LPU lpu = userState.getContext().stream()
-                .filter(l -> l instanceof LPU)
-                .map(l -> (LPU) l)
-                .findFirst()
-                .orElseThrow();
-        Doctor doctor = userState.getContext().stream()
-                .filter(d -> d instanceof Doctor)
-                .map(d -> (Doctor) d)
-                .findFirst()
-                .orElseThrow();
+        LPU lpu = contextUtil.getContextObject(userState, LPU.class);
+        Doctor doctor = contextUtil.getContextObject(userState, Doctor.class);
 
         String appointmentId = message.getText().substring(0, message.getText().indexOf(". "));
         Appointment appointment = gorzdravService.getAppointments(lpu, doctor).stream()
@@ -56,11 +50,7 @@ public class CreateAppointmentChooseAppHandler implements TelegramUpdateMessageH
                 .findFirst()
                 .orElseThrow();
         userState.getContext().add(appointment);
-        MedicalCard medicalCard = userState.getContext().stream()
-                .filter(mc -> mc instanceof MedicalCard)
-                .map(mc -> (MedicalCard) mc)
-                .findFirst()
-                .orElseThrow();
+        MedicalCard medicalCard = contextUtil.getContextObject(userState, MedicalCard.class);
 
         String response = RESPONSE_TEXT_CONFIRMATION.formatted(lpu.lpuShortName(), doctor.name(),
                 DATE_FORMAT.format(appointment.visitStart()) + " - " + DATE_FORMAT.format(appointment.visitEnd()),

@@ -45,26 +45,10 @@ public class TrackingTimePreferenceHandler implements TelegramUpdateMessageHandl
                 .findFirst()
                 .orElseThrow();
         userState.getContext().add(timePreference);
-        LPU lpu = userState.getContext().stream()
-                .filter(l -> l instanceof LPU)
-                .map(LPU.class::cast)
-                .findFirst()
-                .orElseThrow();
-        MedicalCard medicalCard = userState.getContext().stream()
-                .filter(mc -> mc instanceof MedicalCard)
-                .map(MedicalCard.class::cast)
-                .findFirst()
-                .orElseThrow();
-        User user = userState.getContext().stream()
-                .filter(u -> u instanceof User)
-                .map(User.class::cast)
-                .findFirst()
-                .orElseThrow();
-        Doctor doctor = userState.getContext().stream()
-                .filter(d -> d instanceof Doctor)
-                .map(Doctor.class::cast)
-                .findFirst()
-                .orElseThrow();
+        LPU lpu = contextUtil.getContextObject(userState, LPU.class);
+        MedicalCard medicalCard = contextUtil.getContextObject(userState, MedicalCard.class);
+        User user = contextUtil.getContextObject(userState, User.class);
+        Doctor doctor = contextUtil.getContextObject(userState, Doctor.class);
 
         taskRepository.save(Task.builder()
                 .timePreference(timePreference)

@@ -4,6 +4,7 @@ import com.example.gorzdrav_spb_bot.handler.TelegramUpdateMessageHandler;
 import com.example.gorzdrav_spb_bot.handler.UserConstResponseText;
 import com.example.gorzdrav_spb_bot.handler.dao.UserState;
 import com.example.gorzdrav_spb_bot.handler.handlers.medicalCard.add.AddMedCardFirstNameHandler;
+import com.example.gorzdrav_spb_bot.handler.util.ContextUtil;
 import com.example.gorzdrav_spb_bot.model.MedicalCard;
 import com.example.gorzdrav_spb_bot.model.User;
 import com.example.gorzdrav_spb_bot.repository.MedicalCardRepository;
@@ -29,13 +30,11 @@ public class AfterStartHandler implements TelegramUpdateMessageHandler {
     private final AddMedCardFirstNameHandler addMedCardFirstNameHandler;
     private final MedicalCardRepository medicalCardRepository;
     private final ChooseActionHandler chooseActionHandler;
+    private final ContextUtil contextUtil;
 
     @Override
     public BotApiMethod<?> processMessage(Message message, UserState userState) {
-        var user = (User) userState.getContext().stream()
-                .filter(u -> u instanceof User)
-                .findFirst()
-                .orElseThrow();
+        var user = contextUtil.getContextObject(userState, User.class);
 
         if (message.getText().equals(ADD.getText())) {
             if (medicalCardRepository.countByOwnerUserId(user.getUserId()) == 5) {

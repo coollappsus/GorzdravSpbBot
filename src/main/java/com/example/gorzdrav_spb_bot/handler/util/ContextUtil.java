@@ -15,4 +15,12 @@ public class ContextUtil {
             userState.getContext().remove(arg);
         }
     }
+
+    public <T> T getContextObject(UserState state, Class<T> clazz) {
+        return state.getContext().stream()
+                .filter(clazz::isInstance)
+                .map(clazz::cast)
+                .findFirst()
+                .orElseThrow();
+    }
 }

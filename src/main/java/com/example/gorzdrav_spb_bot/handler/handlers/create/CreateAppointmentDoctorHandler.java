@@ -2,6 +2,7 @@ package com.example.gorzdrav_spb_bot.handler.handlers.create;
 
 import com.example.gorzdrav_spb_bot.handler.TelegramUpdateMessageHandler;
 import com.example.gorzdrav_spb_bot.handler.dao.UserState;
+import com.example.gorzdrav_spb_bot.handler.util.ContextUtil;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.GorzdravService;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.Appointment;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.Doctor;
@@ -26,19 +27,12 @@ public class CreateAppointmentDoctorHandler implements TelegramUpdateMessageHand
     private final GorzdravService gorzdravService;
     private final KeyboardFactory keyboardFactory;
     private final CreateAppointmentChooseAppHandler createAppointmentChooseAppHandler;
+    private final ContextUtil contextUtil;
 
     @Override
     public BotApiMethod<?> processMessage(Message message, UserState userState) {
-        LPU lpu = userState.getContext().stream()
-                .filter(l -> l instanceof LPU)
-                .map(l -> (LPU) l)
-                .findFirst()
-                .orElseThrow();
-        Specialty specialty = userState.getContext().stream()
-                .filter(s -> s instanceof Specialty)
-                .map(s -> (Specialty) s)
-                .findFirst()
-                .orElseThrow();
+        LPU lpu = contextUtil.getContextObject(userState, LPU.class);
+        Specialty specialty = contextUtil.getContextObject(userState, Specialty.class);
         Doctor doctor = gorzdravService.getDoctors(specialty, lpu).stream()
                 .filter(d -> d.name().equals(message.getText()))
                 .findFirst()

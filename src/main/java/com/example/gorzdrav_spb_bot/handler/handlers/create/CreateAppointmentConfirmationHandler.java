@@ -38,21 +38,9 @@ public class CreateAppointmentConfirmationHandler implements TelegramUpdateMessa
     @Override
     public BotApiMethod<?> processMessage(Message message, UserState userState) {
         if (message.getText().equals(CONFIRMATION.getText())) {
-            LPU lpu = userState.getContext().stream()
-                    .filter(l -> l instanceof LPU)
-                    .map(l -> (LPU) l)
-                    .findFirst()
-                    .orElseThrow();
-            Appointment appointment = userState.getContext().stream()
-                    .filter(a -> a instanceof Appointment)
-                    .map(a -> (Appointment) a)
-                    .findFirst()
-                    .orElseThrow();
-            MedicalCard medicalCard = userState.getContext().stream()
-                    .filter(mc -> mc instanceof MedicalCard)
-                    .map(mc -> (MedicalCard) mc)
-                    .findFirst()
-                    .orElseThrow();
+            LPU lpu = contextUtil.getContextObject(userState, LPU.class);
+            Appointment appointment = contextUtil.getContextObject(userState, Appointment.class);
+            MedicalCard medicalCard = contextUtil.getContextObject(userState, MedicalCard.class);
             gorzdravService.createAppointment(appointment, lpu, medicalCard.getPatientId());
 
             telegramAsyncMessageSender.sendMessageToUser(message.getChatId(), RESPONSE_TEXT_FINISH_APPOINTMENT);

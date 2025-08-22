@@ -41,11 +41,7 @@ public class AddMedCardLpuHandler implements TelegramUpdateMessageHandler {
 
     @Override
     public BotApiMethod<?> processMessage(Message message, UserState userState) {
-        District district = userState.getContext().stream()
-                .filter(d -> d instanceof District)
-                .map(d -> (District) d)
-                .findFirst()
-                .orElseThrow();
+        District district = contextUtil.getContextObject(userState, District.class);
         String lpuName = message.getText().substring(0, message.getText().indexOf(" по адресу"));
         LPU lpu = gorzdravService.getLPUs(district).stream()
                 .filter(l -> l.lpuShortName().equals(lpuName))

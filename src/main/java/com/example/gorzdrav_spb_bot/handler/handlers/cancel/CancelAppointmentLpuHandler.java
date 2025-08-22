@@ -3,6 +3,7 @@ package com.example.gorzdrav_spb_bot.handler.handlers.cancel;
 import com.example.gorzdrav_spb_bot.handler.TelegramUpdateMessageHandler;
 import com.example.gorzdrav_spb_bot.handler.dao.UserState;
 import com.example.gorzdrav_spb_bot.handler.handlers.StartHandler;
+import com.example.gorzdrav_spb_bot.handler.util.ContextUtil;
 import com.example.gorzdrav_spb_bot.model.MedicalCard;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.GorzdravService;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.District;
@@ -31,25 +32,23 @@ public class CancelAppointmentLpuHandler implements TelegramUpdateMessageHandler
     private final CancelAppointmentAppHandler cancelAppointmentAppHandler;
     private final StartHandler startHandler;
     private final TelegramAsyncMessageSender telegramAsyncMessageSender;
+    private final ContextUtil contextUtil;
 
     public CancelAppointmentLpuHandler(GorzdravService gorzdravService, KeyboardFactory keyboardFactory,
                                        CancelAppointmentAppHandler cancelAppointmentAppHandler,
                                        @Lazy StartHandler startHandler,
-                                       TelegramAsyncMessageSender telegramAsyncMessageSender) {
+                                       TelegramAsyncMessageSender telegramAsyncMessageSender, ContextUtil contextUtil) {
         this.gorzdravService = gorzdravService;
         this.keyboardFactory = keyboardFactory;
         this.cancelAppointmentAppHandler = cancelAppointmentAppHandler;
         this.startHandler = startHandler;
         this.telegramAsyncMessageSender = telegramAsyncMessageSender;
+        this.contextUtil = contextUtil;
     }
 
     @Override
     public BotApiMethod<?> processMessage(Message message, UserState userState) {
-        District district = userState.getContext().stream()
-                .filter(d -> d instanceof District)
-                .map(d -> (District) d)
-                .findFirst()
-                .orElseThrow();
+        District district = contextUtil.getContextObject(userState, District.class);
         String lpuName = message.getText().substring(0, message.getText().indexOf(" по адресу"));
         LPU lpu = gorzdravService.getLPUs(district).stream()
                 .filter(l -> l.lpuShortName().equals(lpuName))
@@ -57,11 +56,7 @@ public class CancelAppointmentLpuHandler implements TelegramUpdateMessageHandler
                 .orElseThrow();
         userState.getContext().add(lpu);
 
-        MedicalCard medicalCard = userState.getContext().stream()
-                .filter(mc -> mc instanceof MedicalCard)
-                .map(mc -> (MedicalCard) mc)
-                .findFirst()
-                .orElseThrow();
+        MedicalCard medicalCard = contextUtil.getContextObject(userState, MedicalCard.class);
         var appointments = gorzdravService.getFullAppointments(lpu, medicalCard.getPatientId());
 
         if (appointments == null || appointments.isEmpty()) {

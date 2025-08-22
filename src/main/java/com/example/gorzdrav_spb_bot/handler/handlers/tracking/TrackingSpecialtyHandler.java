@@ -2,7 +2,7 @@ package com.example.gorzdrav_spb_bot.handler.handlers.tracking;
 
 import com.example.gorzdrav_spb_bot.handler.TelegramUpdateMessageHandler;
 import com.example.gorzdrav_spb_bot.handler.dao.UserState;
-import com.example.gorzdrav_spb_bot.handler.handlers.create.CreateAppointmentDoctorHandler;
+import com.example.gorzdrav_spb_bot.handler.util.ContextUtil;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.GorzdravService;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.Doctor;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.LPU;
@@ -23,14 +23,11 @@ public class TrackingSpecialtyHandler implements TelegramUpdateMessageHandler {
     private final GorzdravService gorzdravService;
     private final KeyboardFactory keyboardFactory;
     private final TrackingDoctorHandler trackingDoctorHandler;
+    private final ContextUtil contextUtil;
 
     @Override
     public BotApiMethod<?> processMessage(Message message, UserState userState) {
-        LPU lpu = userState.getContext().stream()
-                .filter(l -> l instanceof LPU)
-                .map(l -> (LPU) l)
-                .findFirst()
-                .orElseThrow();
+        LPU lpu = contextUtil.getContextObject(userState, LPU.class);
         String specialtyName = message.getText();
         Specialty specialty = gorzdravService.getSpecialties(lpu).stream()
                 .filter(s -> s.name().equals(specialtyName))
