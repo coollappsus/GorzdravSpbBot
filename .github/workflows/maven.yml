@@ -49,4 +49,4 @@ jobs:
           docker volume prune --force
 
       - name: Build & deploy via docker-compose
-        run: docker compose up -d --build --pull always --force-recreate
+        run: docker compose up -d --build --pull always --force-recreate --remove-orphans
