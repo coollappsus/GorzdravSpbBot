@@ -55,7 +55,7 @@ public class AppointmentChecker {
             String patientId = task.getMedicalCard().getPatientId();
             AtomicReference<Appointment> appointment = new AtomicReference<>();
             hardFiltering(allAppointments, task)
-                    .ifPresent(
+                    .ifPresentOrElse(
                             a -> softFiltering(allAppointments, task)
                                     .ifPresentOrElse(
                                             appointment1 -> {
@@ -72,7 +72,9 @@ public class AppointmentChecker {
                                                 doCompleteTaskAndNotifyUser(task, appointment);
                                                 log.info("Appointment was created for any free time, no preferred " +
                                                         "time was found, task = {}", task.getId());
-                                            })
+                                            }),
+                            () -> log.info("Appointment not found for task {} on hard filter. Repeat search again later",
+                                    task.getId())
                     );
         }
     }
