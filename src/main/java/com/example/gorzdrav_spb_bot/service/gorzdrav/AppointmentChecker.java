@@ -16,6 +16,7 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -54,28 +55,29 @@ public class AppointmentChecker {
 
             String patientId = task.getMedicalCard().getPatientId();
             AtomicReference<Appointment> appointment = new AtomicReference<>();
-            hardFiltering(allAppointments, task)
+            List<Appointment> hardFilteredList = hardFiltering(allAppointments, task);
+            if (hardFilteredList.isEmpty()) {
+                log.info("Appointment not found for task {} on hard filter. Repeat search again later", task.getId());
+                continue;
+            }
+
+            softFiltering(hardFilteredList, task)
                     .ifPresentOrElse(
-                            a -> softFiltering(allAppointments, task)
-                                    .ifPresentOrElse(
-                                            appointment1 -> {
-                                                appointment.set(appointment1);
-                                                gorzdravService.createAppointment(appointment1, lpuId, patientId);
-                                                doCompleteTaskAndNotifyUser(task, appointment);
-                                                log.info("The appointment was created for appointment1 preferred " +
-                                                        "time, task = {}", task.getId());
-                                            },
-                                            () -> {
-                                                Appointment appointment1 = allAppointments.get(0);
-                                                appointment.set(appointment1);
-                                                gorzdravService.createAppointment(appointment1, lpuId, patientId);
-                                                doCompleteTaskAndNotifyUser(task, appointment);
-                                                log.info("Appointment was created for any free time, no preferred " +
-                                                        "time was found, task = {}", task.getId());
-                                            }),
-                            () -> log.info("Appointment not found for task {} on hard filter. Repeat search again later",
-                                    task.getId())
-                    );
+                            appointment1 -> {
+                                appointment.set(appointment1);
+                                gorzdravService.createAppointment(appointment1, lpuId, patientId);
+                                doCompleteTaskAndNotifyUser(task, appointment);
+                                log.info("The appointment was created for appointment1 preferred time, task = {}",
+                                        task.getId());
+                            },
+                            () -> {
+                                Appointment appointment1 = hardFilteredList.get(0);
+                                appointment.set(appointment1);
+                                gorzdravService.createAppointment(appointment1, lpuId, patientId);
+                                doCompleteTaskAndNotifyUser(task, appointment);
+                                log.info("Appointment was created for any free time, no preferred time was found, task = {}",
+                                        task.getId());
+                            });
         }
     }
 
@@ -107,8 +109,14 @@ public class AppointmentChecker {
                 .findAny();
     }
 
-    private Optional<Appointment> hardFiltering(Collection<Appointment> allAppointments, Task task) {
+    private List<Appointment> hardFiltering(Collection<Appointment> allAppointments, Task task) {
         return allAppointments.stream()
-                .filter(a -> DateUtils.isSameDay(task.getPreferenceDate(), a.visitStart())).findAny();
+                .filter(a -> {
+                    if (task.getPreferenceDate() != null) {
+                        return DateUtils.isSameDay(task.getPreferenceDate(), a.visitStart());
+                    } else {
+                        return true;
+                    }
+                }).toList();
     }
 }
