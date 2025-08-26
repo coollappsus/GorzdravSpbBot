@@ -13,7 +13,7 @@ services:
       - TZ=Europe/Moscow
     # Монтируем сгенерённый файл свойств внутрь контейнера
     volumes:
-      - ./application.properties:/usr/app/config/application.properties:ro
+      - ./application.properties:/config/application.properties:ro
 
     depends_on:
       - dummy
