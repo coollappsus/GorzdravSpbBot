@@ -35,11 +35,33 @@ jobs:
       - run: echo 'Тут будут тесты прогонятся, когда эти тесты завезут :) '
 
   deploy:
+    name: Deploy to production via Docker Compose
     runs-on: self-hosted # Запускаем на раннере, который настроили до этого.
     needs: test # Запускаем только если джоба test прошла успешно
+    env: # Пробрасываем секреты в среду шага deploy
+      BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+      DB_URL: ${{ secrets.DB_URL }}
+      DB_USER: ${{ secrets.DB_USERNAME }}
+      DB_PASS: ${{ secrets.DB_PASSWORD }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      # Генерируем .env
+      - name: Generate .env file
+        run: |
+          cat <<EOF > .env
+          BOT_TOKEN=${BOT_TOKEN}
+          DB_URL=${DB_URL}
+          DB_USERNAME=${DB_USERNAME}
+          DB_PASSWORD=${DB_PASSWORD}
+          EOF
+
+      # Рендерим application.properties.tpl из шаблона
+      - name: Render application.properties.tpl
+        run: |
+          envsubst < application.properties.tpl > application.properties
 
       - name: Cleanup Docker
         run: |
