@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
+import java.util.Date;
+
 @Entity
 @Table(name = "task")
 @Data
@@ -35,6 +37,8 @@ public class Task {
     private boolean activeStatus;
 
     private TimePreference timePreference;
+
+    private Date preferenceDate;
 
     public void doFinished() {
         this.completeStatus = true;

@@ -18,6 +18,7 @@ import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.util.Arrays;
+import java.util.Date;
 
 @Component
 public class TrackingTimePreferenceHandler implements TelegramUpdateMessageHandler {
@@ -49,6 +50,7 @@ public class TrackingTimePreferenceHandler implements TelegramUpdateMessageHandl
         MedicalCard medicalCard = contextUtil.getContextObject(userState, MedicalCard.class);
         User user = contextUtil.getContextObject(userState, User.class);
         Doctor doctor = contextUtil.getContextObject(userState, Doctor.class);
+        Date preferenceDate = getPreferenceDate(userState);
 
         taskRepository.save(Task.builder()
                 .timePreference(timePreference)
@@ -57,11 +59,22 @@ public class TrackingTimePreferenceHandler implements TelegramUpdateMessageHandl
                 .medicalCard(medicalCard)
                 .doctorId(doctor.id())
                 .activeStatus(true)
+                .preferenceDate(preferenceDate)
                 .build());
         userState.setHandler(startHandler);
         contextUtil.cleanAllContext(userState);
         telegramAsyncMessageSender.sendMessageToUser(message.getChatId(), RESPONSE_TEXT_FINISH_TRACKING);
 
         return startHandler.processMessage(message, userState);
+    }
+
+    private Date getPreferenceDate(UserState userState) {
+        Date preferenceDate;
+        try {
+            preferenceDate = contextUtil.getContextObject(userState, Date.class);
+        } catch (Exception e) {
+            preferenceDate = null;
+        }
+        return preferenceDate;
     }
 }

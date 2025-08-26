@@ -3,7 +3,6 @@ package com.example.gorzdrav_spb_bot.handler.handlers.tracking;
 import com.example.gorzdrav_spb_bot.handler.TelegramUpdateMessageHandler;
 import com.example.gorzdrav_spb_bot.handler.dao.UserState;
 import com.example.gorzdrav_spb_bot.handler.util.ContextUtil;
-import com.example.gorzdrav_spb_bot.model.TimePreference;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.GorzdravService;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.Doctor;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.LPU;
@@ -15,7 +14,6 @@ import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
-import java.util.Arrays;
 import java.util.List;
 
 @Component
@@ -23,16 +21,13 @@ import java.util.List;
 public class TrackingDoctorHandler implements TelegramUpdateMessageHandler {
 
     private static final String RESPONSE_TEXT_APPOINTMENT = """
-            Выберите предпочитаемое время для записи.
-            Утро(с 8:00 до 12:00)
-            День(С 12:00 до 17:00)
-            Вечер(с 17:00 до 20:00)
-            Если талона с предпочитаемым временем не будет найдено, будет произведена запись на любое свободное время.
+            Введите дату в формате dd.mm.yyyy для отслеживания номерков.
+            Если необходимо попасть к врачу в любой день, выберите "Не важно".
             """;
 
     private final GorzdravService gorzdravService;
     private final KeyboardFactory keyboardFactory;
-    private final TrackingTimePreferenceHandler trackingTimePreferenceHandler;
+    private final TrackingDayPreferenceHandler trackingDayPreferenceHandler;
     private final ContextUtil contextUtil;
 
     @Override
@@ -45,12 +40,8 @@ public class TrackingDoctorHandler implements TelegramUpdateMessageHandler {
                 .orElseThrow();
         userState.getContext().add(doctor);
 
-
-        List<String> preferenceTimeStrings = Arrays.stream(TimePreference.values())
-                .map(TimePreference::getAdditionalName)
-                .toList();
-        var keyboard = keyboardFactory.createReplyKeyboard(preferenceTimeStrings);
-        userState.setHandler(trackingTimePreferenceHandler);
+        var keyboard = keyboardFactory.createReplyKeyboard(List.of("Не важно"));
+        userState.setHandler(trackingDayPreferenceHandler);
         return SendMessage.builder()
                 .chatId(message.getChatId())
                 .replyMarkup(keyboard)

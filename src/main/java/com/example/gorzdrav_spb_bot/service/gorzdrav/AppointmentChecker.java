@@ -1,18 +1,22 @@
 package com.example.gorzdrav_spb_bot.service.gorzdrav;
 
 import com.example.gorzdrav_spb_bot.model.MedicalCard;
+import com.example.gorzdrav_spb_bot.model.Task;
 import com.example.gorzdrav_spb_bot.repository.TaskRepository;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.Appointment;
 import com.example.gorzdrav_spb_bot.service.telegram.TelegramAsyncMessageSender;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.time.ZoneId;
+import java.util.Collection;
 import java.util.Comparator;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Component
@@ -50,41 +54,59 @@ public class AppointmentChecker {
 
             String patientId = task.getMedicalCard().getPatientId();
             AtomicReference<Appointment> appointment = new AtomicReference<>();
-            allAppointments.stream()
-                    .filter(a -> {
-                        LocalTime visitLocalTime = a.visitStart().toInstant().atZone(zone).toLocalTime();
-                        return switch (task.getTimePreference()) {
-                            case EARLY -> visitLocalTime.isBefore(LocalTime.NOON);
-                            case MID -> !visitLocalTime.isBefore(LocalTime.NOON)
-                                    && visitLocalTime.isBefore(LocalTime.of(17, 0));
-                            case LATE -> !visitLocalTime.isBefore(LocalTime.of(17, 0));
-                        };
-                    }).sorted(Comparator.comparing(Appointment::visitStart))
-                    .findAny()
-                    .ifPresentOrElse(
-                            a -> {
-                                appointment.set(a);
-                                gorzdravService.createAppointment(a, lpuId, patientId);
-                                log.info("The appointment was created for a preferred time, task = {}", task.getId());
-                            },
-                            () -> {
-                                Appointment a = allAppointments.get(0);
-                                appointment.set(a);
-                                gorzdravService.createAppointment(a, lpuId, patientId);
-                                log.info("Appointment was created for any free time, no preferred time was found, " +
-                                        "task = {}", task.getId());
-                            });
-            task.doFinished();
-            taskRepository.save(task);
-
-            telegramAsyncMessageSender.sendMessageToUser(task.getOwner().getChatId(),
-                    getMessageByAppointment(appointment.get(), task.getMedicalCard()));
+            hardFiltering(allAppointments, task)
+                    .ifPresent(
+                            a -> softFiltering(allAppointments, task)
+                                    .ifPresentOrElse(
+                                            appointment1 -> {
+                                                appointment.set(appointment1);
+                                                gorzdravService.createAppointment(appointment1, lpuId, patientId);
+                                                doCompleteTaskAndNotifyUser(task, appointment);
+                                                log.info("The appointment was created for appointment1 preferred " +
+                                                        "time, task = {}", task.getId());
+                                            },
+                                            () -> {
+                                                Appointment appointment1 = allAppointments.get(0);
+                                                appointment.set(appointment1);
+                                                gorzdravService.createAppointment(appointment1, lpuId, patientId);
+                                                doCompleteTaskAndNotifyUser(task, appointment);
+                                                log.info("Appointment was created for any free time, no preferred " +
+                                                        "time was found, task = {}", task.getId());
+                                            })
+                    );
         }
+    }
+
+    private void doCompleteTaskAndNotifyUser(Task task, AtomicReference<Appointment> appointment) {
+        task.doFinished();
+        taskRepository.save(task);
+
+        telegramAsyncMessageSender.sendMessageToUser(task.getOwner().getChatId(),
+                getMessageByAppointment(appointment.get(), task.getMedicalCard()));
     }
 
     private String getMessageByAppointment(Appointment appointment, MedicalCard medicalCard) {
         return MESSAGE_TEXT.formatted(appointment.address(),
                 FIRST_DATE_FORMAT.format(appointment.visitStart()) + " - " + SECOND_DATE_FORMAT.format(appointment.visitEnd()),
                 medicalCard.getLastName() + " " + medicalCard.getFirstName() + " " + medicalCard.getMiddleName());
+    }
+
+    private Optional<Appointment> softFiltering(Collection<Appointment> allAppointments, Task task) {
+        return allAppointments.stream()
+                .filter(a -> {
+                    LocalTime visitLocalTime = a.visitStart().toInstant().atZone(zone).toLocalTime();
+                    return switch (task.getTimePreference()) {
+                        case EARLY -> visitLocalTime.isBefore(LocalTime.NOON);
+                        case MID -> !visitLocalTime.isBefore(LocalTime.NOON)
+                                && visitLocalTime.isBefore(LocalTime.of(17, 0));
+                        case LATE -> !visitLocalTime.isBefore(LocalTime.of(17, 0));
+                    };
+                }).sorted(Comparator.comparing(Appointment::visitStart))
+                .findAny();
+    }
+
+    private Optional<Appointment> hardFiltering(Collection<Appointment> allAppointments, Task task) {
+        return allAppointments.stream()
+                .filter(a -> DateUtils.isSameDay(task.getPreferenceDate(), a.visitStart())).findAny();
     }
 }
