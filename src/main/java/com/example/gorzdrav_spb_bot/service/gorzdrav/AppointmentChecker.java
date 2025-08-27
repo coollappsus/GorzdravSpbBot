@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
@@ -31,6 +32,12 @@ public class AppointmentChecker {
             ⏱Время - %s
             👤ФИО пациента - %s
             """;
+    private static final String ERROR_MESSAGE_TEXT = """
+            ❌Талончик был найден, но произошла ошибка во время записи к врачу.
+            Ошибка на стороне Горздрава.
+            Данная задача на отслеживание отменена во избежание спама.
+            """;
+
     private static final SimpleDateFormat FIRST_DATE_FORMAT = new SimpleDateFormat("d MMMM yyyy, HH:mm");
     private static final SimpleDateFormat SECOND_DATE_FORMAT = new SimpleDateFormat("HH:mm");
     private static final ZoneId zone = ZoneId.of("Europe/Moscow");
@@ -63,30 +70,56 @@ public class AppointmentChecker {
 
             softFiltering(hardFilteredList, task)
                     .ifPresentOrElse(
-                            appointment1 -> {
-                                appointment.set(appointment1);
-                                gorzdravService.createAppointment(appointment1, lpuId, patientId);
-                                doCompleteTaskAndNotifyUser(task, appointment);
-                                log.info("The appointment was created for appointment1 preferred time, task = {}",
-                                        task.getId());
-                            },
-                            () -> {
-                                Appointment appointment1 = hardFilteredList.get(0);
-                                appointment.set(appointment1);
-                                gorzdravService.createAppointment(appointment1, lpuId, patientId);
-                                doCompleteTaskAndNotifyUser(task, appointment);
-                                log.info("Appointment was created for any free time, no preferred time was found, task = {}",
-                                        task.getId());
-                            });
+                            appointment1 -> createAppointmentWithPreferenceTime(task, appointment1, appointment, lpuId,
+                                    patientId),
+                            () -> createAppointmentWithoutPreferenceTime(task, hardFilteredList, appointment, lpuId,
+                                    patientId));
         }
     }
 
-    private void doCompleteTaskAndNotifyUser(Task task, AtomicReference<Appointment> appointment) {
+    private void createAppointmentWithoutPreferenceTime(Task task, List<Appointment> hardFilteredList,
+                                                        AtomicReference<Appointment> appointment,
+                                                        String lpuId, String patientId) {
+        try {
+            Appointment appointment1 = hardFilteredList.get(0);
+            appointment.set(appointment1);
+            gorzdravService.createAppointment(appointment1, lpuId, patientId);
+            doCompleteTaskAndNotifyUser(task, appointment, false);
+            log.info("Appointment was created for any free time, no preferred time was found, task = {}",
+                    task.getId());
+        } catch (ResponseStatusException e) {
+            doCompleteTaskAndNotifyUser(task, appointment, true);
+            log.error("Appointment was found, but gorzdrav response error in processing create appointment, task = {}",
+                    task.getId());
+        }
+    }
+
+    private void createAppointmentWithPreferenceTime(Task task, Appointment appointment1,
+                                                     AtomicReference<Appointment> appointment,
+                                                     String lpuId, String patientId) {
+        try {
+            appointment.set(appointment1);
+            gorzdravService.createAppointment(appointment1, lpuId, patientId);
+            doCompleteTaskAndNotifyUser(task, appointment, false);
+            log.info("The appointment was created for appointment1 preferred time, task = {}",
+                    task.getId());
+        } catch (Exception e) {
+            doCompleteTaskAndNotifyUser(task, appointment, true);
+            log.error("Appointment was found, but gorzdrav response error in processing create appointment, task = {}",
+                    task.getId());
+        }
+    }
+
+    private void doCompleteTaskAndNotifyUser(Task task, AtomicReference<Appointment> appointment, boolean isError) {
         task.doFinished();
         taskRepository.save(task);
 
-        telegramAsyncMessageSender.sendMessageToUser(task.getOwner().getChatId(),
-                getMessageByAppointment(appointment.get(), task.getMedicalCard()));
+        if (isError) {
+            telegramAsyncMessageSender.sendMessageToUser(task.getOwner().getChatId(),
+                    getMessageByAppointment(appointment.get(), task.getMedicalCard()));
+        } else {
+            telegramAsyncMessageSender.sendMessageToUser(task.getOwner().getChatId(), ERROR_MESSAGE_TEXT);
+        }
     }
 
     private String getMessageByAppointment(Appointment appointment, MedicalCard medicalCard) {
