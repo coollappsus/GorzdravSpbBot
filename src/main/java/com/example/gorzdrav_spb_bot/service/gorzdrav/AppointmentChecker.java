@@ -34,8 +34,9 @@ public class AppointmentChecker {
             """;
     private static final String ERROR_MESSAGE_TEXT = """
             ❌Талончик был найден, но произошла ошибка во время записи к врачу.
-            Ошибка на стороне Горздрава.
+            Ошибка на стороне Горздрава, либо нарушены ограничения для записи к данному специалисту. Подробнее в ошибке.
             Данная задача на отслеживание отменена во избежание спама в ТГ.
+            %s
             """;
 
     private static final SimpleDateFormat FIRST_DATE_FORMAT = new SimpleDateFormat("d MMMM yyyy, HH:mm");
@@ -84,11 +85,11 @@ public class AppointmentChecker {
             Appointment appointment1 = hardFilteredList.get(0);
             appointment.set(appointment1);
             gorzdravService.createAppointment(appointment1, lpuId, patientId);
-            doCompleteTaskAndNotifyUser(task, appointment, false);
+            doCompleteTaskAndNotifyUser(task, appointment, null);
             log.info("Appointment was created for any free time, no preferred time was found, task = {}",
                     task.getId());
         } catch (ResponseStatusException e) {
-            doCompleteTaskAndNotifyUser(task, appointment, true);
+            doCompleteTaskAndNotifyUser(task, appointment, e.getMessage());
             log.error("Appointment was found, but gorzdrav response error in processing create appointment, " +
                     "task = {}, error = {}", task.getId(), e.getMessage());
         }
@@ -100,25 +101,26 @@ public class AppointmentChecker {
         try {
             appointment.set(appointment1);
             gorzdravService.createAppointment(appointment1, lpuId, patientId);
-            doCompleteTaskAndNotifyUser(task, appointment, false);
+            doCompleteTaskAndNotifyUser(task, appointment, null);
             log.info("The appointment was created for appointment1 preferred time, task = {}",
                     task.getId());
         } catch (Exception e) {
-            doCompleteTaskAndNotifyUser(task, appointment, true);
+            doCompleteTaskAndNotifyUser(task, appointment, e.getMessage());
             log.error("Appointment was found, but gorzdrav response error in processing create appointment, " +
                     "task = {}, error = {}", task.getId(), e.getMessage());
         }
     }
 
-    private void doCompleteTaskAndNotifyUser(Task task, AtomicReference<Appointment> appointment, boolean isError) {
+    private void doCompleteTaskAndNotifyUser(Task task, AtomicReference<Appointment> appointment, String errorText) {
         task.doFinished();
         taskRepository.save(task);
 
-        if (isError) {
+        if (errorText == null) {
             telegramAsyncMessageSender.sendMessageToUser(task.getOwner().getChatId(),
                     getMessageByAppointment(appointment.get(), task.getMedicalCard()));
         } else {
-            telegramAsyncMessageSender.sendMessageToUser(task.getOwner().getChatId(), ERROR_MESSAGE_TEXT);
+            telegramAsyncMessageSender.sendMessageToUser(task.getOwner().getChatId(),
+                    String.format(ERROR_MESSAGE_TEXT, errorText));
         }
     }
 
