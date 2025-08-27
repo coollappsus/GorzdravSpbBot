@@ -54,9 +54,10 @@ public class AppointmentChecker {
         for (var task : tasks) {
             log.info("Checking appointment for task {}", task.getId());
             String lpuId = task.getLpuId();
-            var allAppointments = gorzdravService.getAppointments(lpuId, task.getDoctorId());
+            List<Appointment> allAppointments;
+            allAppointments = getAppointments(task, lpuId);
 
-            if (allAppointments.isEmpty()) {
+            if (allAppointments == null || allAppointments.isEmpty()) {
                 log.info("No appointments found for task {}", task.getId());
                 continue;
             }
@@ -76,6 +77,16 @@ public class AppointmentChecker {
                             () -> createAppointmentWithoutPreferenceTime(task, hardFilteredList, appointment, lpuId,
                                     patientId));
         }
+    }
+
+    private List<Appointment> getAppointments(Task task, String lpuId) {
+        List<Appointment> allAppointments;
+        try {
+            allAppointments = gorzdravService.getAppointments(lpuId, task.getDoctorId());
+        } catch (ResponseStatusException e) {
+            return null;
+        }
+        return allAppointments;
     }
 
     private void createAppointmentWithoutPreferenceTime(Task task, List<Appointment> hardFilteredList,
