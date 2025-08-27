@@ -35,7 +35,7 @@ public class AppointmentChecker {
     private static final String ERROR_MESSAGE_TEXT = """
             ❌Талончик был найден, но произошла ошибка во время записи к врачу.
             Ошибка на стороне Горздрава.
-            Данная задача на отслеживание отменена во избежание спама.
+            Данная задача на отслеживание отменена во избежание спама в ТГ.
             """;
 
     private static final SimpleDateFormat FIRST_DATE_FORMAT = new SimpleDateFormat("d MMMM yyyy, HH:mm");
@@ -89,8 +89,8 @@ public class AppointmentChecker {
                     task.getId());
         } catch (ResponseStatusException e) {
             doCompleteTaskAndNotifyUser(task, appointment, true);
-            log.error("Appointment was found, but gorzdrav response error in processing create appointment, task = {}",
-                    task.getId());
+            log.error("Appointment was found, but gorzdrav response error in processing create appointment, " +
+                    "task = {}, error = {}", task.getId(), e.getMessage());
         }
     }
 
@@ -105,8 +105,8 @@ public class AppointmentChecker {
                     task.getId());
         } catch (Exception e) {
             doCompleteTaskAndNotifyUser(task, appointment, true);
-            log.error("Appointment was found, but gorzdrav response error in processing create appointment, task = {}",
-                    task.getId());
+            log.error("Appointment was found, but gorzdrav response error in processing create appointment, " +
+                    "task = {}, error = {}", task.getId(), e.getMessage());
         }
     }
 
