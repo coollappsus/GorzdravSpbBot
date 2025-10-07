@@ -22,6 +22,7 @@ public class UserChecker {
 
     @Scheduled(fixedDelay = 3600000) //Раз в 1 час
     public void checkNewUser() {
+        log.info("Checking new user");
         List<User> newUsers = userRepository.getNewUsers();
 
         if (newUsers.isEmpty()) return;
@@ -32,6 +33,7 @@ public class UserChecker {
             sb.append(user.getUserName()).append("\n");
         }
 
+        log.info("notify admin about new users");
         telegramAsyncMessageSender.sendMessageToUser(ADMIN_ID, sb.toString());
     }
 }
