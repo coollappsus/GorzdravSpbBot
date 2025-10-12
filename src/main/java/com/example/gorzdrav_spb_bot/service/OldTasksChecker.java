@@ -29,6 +29,7 @@ public class OldTasksChecker {
                 false, true);
         for (Task task : oldTasks) {
             task.setActiveStatus(false);
+            taskRepository.save(task);
         }
 
         log.info("Saving old tasks and notify admin");
