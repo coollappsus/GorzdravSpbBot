@@ -27,6 +27,11 @@ public class OldTasksChecker {
         log.info("Checking old tasks");
         List<Task> oldTasks = taskRepository.findByPreferenceDateBeforeAndCompleteStatusAndActiveStatus(new Date(),
                 false, true);
+        if (oldTasks.isEmpty()) {
+            log.info("No old tasks found");
+            return;
+        }
+
         for (Task task : oldTasks) {
             task.setActiveStatus(false);
             taskRepository.save(task);
