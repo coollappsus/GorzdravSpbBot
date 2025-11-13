@@ -22,7 +22,7 @@ public class OldTasksChecker {
     private final TaskRepository taskRepository;
     private final TelegramAsyncMessageSender telegramAsyncMessageSender;
 
-    @Scheduled(cron = "0 5 0 * * *", zone = "Europe/Moscow")
+    @Scheduled(cron = "0 59 23 * * *", zone = "Europe/Moscow")
     public void checkAndRemoveOldTasks() {
         log.info("Checking old tasks");
         List<Task> oldTasks = taskRepository.findByPreferenceDateBeforeAndCompleteStatusAndActiveStatus(new Date(),
