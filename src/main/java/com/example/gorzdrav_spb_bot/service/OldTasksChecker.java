@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -16,8 +17,13 @@ import java.util.List;
 @Slf4j
 public class OldTasksChecker {
 
+    private final static SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
     private final static Long ADMIN_ID = 906044021L;
     private final static String MESSAGE_TEXT = "OLD TASKS SUCCEEDED REMOVED. COUNT - %s";
+    private final static String MESSAGE_TEXT_FOR_USER = """
+            ❌Задача №%s была отменена по причине отсутствия актуальности.
+            Дата отслеживания - %s
+            """;
 
     private final TaskRepository taskRepository;
     private final TelegramAsyncMessageSender telegramAsyncMessageSender;
@@ -35,6 +41,8 @@ public class OldTasksChecker {
         for (Task task : oldTasks) {
             task.setActiveStatus(false);
             taskRepository.save(task);
+            telegramAsyncMessageSender.sendMessageToUser(task.getOwner().getChatId(),
+                    MESSAGE_TEXT_FOR_USER.formatted(task.getId(), dateFormat.format(task.getPreferenceDate())));
         }
 
         log.info("Saving old tasks and notify admin");
