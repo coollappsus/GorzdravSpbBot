@@ -23,7 +23,7 @@ import java.util.Date;
 @Component
 public class TrackingTimePreferenceHandler implements TelegramUpdateMessageHandler {
 
-    private static final String RESPONSE_TEXT_FINISH_TRACKING = "Поздравляю! Задача на отслеживание талончиков к врачу создана✨";
+    private static final String RESPONSE_TEXT_FINISH_TRACKING = "Поздравляю! Задача №%s на отслеживание талончиков к врачу создана✨";
 
     private final TaskRepository taskRepository;
     private final ContextUtil contextUtil;
@@ -52,7 +52,7 @@ public class TrackingTimePreferenceHandler implements TelegramUpdateMessageHandl
         Doctor doctor = contextUtil.getContextObject(userState, Doctor.class);
         Date preferenceDate = getPreferenceDate(userState);
 
-        taskRepository.save(Task.builder()
+        Long taskId = taskRepository.save(Task.builder()
                 .timePreference(timePreference)
                 .lpuId(lpu.id())
                 .owner(user)
@@ -60,10 +60,10 @@ public class TrackingTimePreferenceHandler implements TelegramUpdateMessageHandl
                 .doctorId(doctor.id())
                 .activeStatus(true)
                 .preferenceDate(preferenceDate)
-                .build());
+                .build()).getId();
         userState.setHandler(startHandler);
         contextUtil.cleanAllContext(userState);
-        telegramAsyncMessageSender.sendMessageToUser(message.getChatId(), RESPONSE_TEXT_FINISH_TRACKING);
+        telegramAsyncMessageSender.sendMessageToUser(message.getChatId(), RESPONSE_TEXT_FINISH_TRACKING.formatted(taskId));
 
         return startHandler.processMessage(message, userState);
     }

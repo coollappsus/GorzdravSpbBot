@@ -31,9 +31,10 @@ public class AppointmentChecker {
             🚑Лечебно-профилактическое учреждение по адресу %s
             ⏱Время - %s
             👤ФИО пациента - %s
+            Задача №%s
             """;
     private static final String ERROR_MESSAGE_TEXT = """
-            ❌Талончик был найден, но произошла ошибка во время записи к врачу.
+            ❌Талончик был найден, но произошла ошибка во время записи к врачу. Задача №%s
             Ошибка на стороне Горздрава, либо нарушены ограничения для записи к данному специалисту. Подробнее в ошибке.
             Данная задача на отслеживание отменена во избежание спама в ТГ.
             %s
@@ -128,17 +129,19 @@ public class AppointmentChecker {
 
         if (errorText == null) {
             telegramAsyncMessageSender.sendMessageToUser(task.getOwner().getChatId(),
-                    getMessageByAppointment(appointment.get(), task.getMedicalCard()));
+                    getMessageByAppointment(appointment.get(), task));
         } else {
             telegramAsyncMessageSender.sendMessageToUser(task.getOwner().getChatId(),
-                    String.format(ERROR_MESSAGE_TEXT, errorText));
+                    ERROR_MESSAGE_TEXT.formatted(task.getId(), errorText));
         }
     }
 
-    private String getMessageByAppointment(Appointment appointment, MedicalCard medicalCard) {
+    private String getMessageByAppointment(Appointment appointment, Task task) {
+        MedicalCard medicalCard = task.getMedicalCard();
+        Long taskId = task.getId();
         return MESSAGE_TEXT.formatted(appointment.address(),
                 FIRST_DATE_FORMAT.format(appointment.visitStart()) + " - " + SECOND_DATE_FORMAT.format(appointment.visitEnd()),
-                medicalCard.getLastName() + " " + medicalCard.getFirstName() + " " + medicalCard.getMiddleName());
+                medicalCard.getLastName() + " " + medicalCard.getFirstName() + " " + medicalCard.getMiddleName(), taskId);
     }
 
     private Optional<Appointment> softFiltering(Collection<Appointment> allAppointments, Task task) {
