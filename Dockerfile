@@ -8,7 +8,7 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 # Используем официальный образ OpenJDK как базовый
-FROM openjdk:17-jdk-slim
+FROM openjdk:17-jdk-slim-bullseye
 
 # Копируем jar-ку, которая сгенерировалась выше
 COPY --from=build /target/*.jar app.jar
