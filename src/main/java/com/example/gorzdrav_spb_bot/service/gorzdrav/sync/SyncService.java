@@ -96,17 +96,27 @@ public class SyncService {
         List<Doctor> doctors = new ArrayList<>();
         for (LPU lpu : getLpus()) {
             for (Specialty specialty : getSpecialties(lpu)) {
-                doctors.addAll(gorzdravService.getDoctors(specialty, lpu));
+                doctors.addAll(getDoctors(lpu, specialty));
             }
         }
         return doctors;
+    }
+
+    private List<Doctor> getDoctors(LPU lpu, Specialty specialty) {
+        try {
+            return gorzdravService.getDoctors(specialty, lpu);
+        } catch (Exception e) {
+            log.error("Произошла ошибка при сборе докторов по специальности {} в ЛПУ {}\n{}",
+                    specialty.name(), lpu.lpuShortName(), e.getMessage());
+            return new ArrayList<>();
+        }
     }
 
     private List<Specialty> getSpecialties(LPU lpu) {
         try {
             return gorzdravService.getSpecialties(lpu);
         } catch (Exception e) {
-            log.error("Произошла ошибка при сборе специалистов в ЛПУ " + lpu.lpuShortName() + "\n" + e.getMessage());
+            log.error("Произошла ошибка при сборе специалистов в ЛПУ {}\n{}", lpu.lpuShortName(), e.getMessage());
             return new ArrayList<>();
         }
     }
