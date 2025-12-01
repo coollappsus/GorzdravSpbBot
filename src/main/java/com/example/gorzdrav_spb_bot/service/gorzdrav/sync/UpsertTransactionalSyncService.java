@@ -44,7 +44,7 @@ public class UpsertTransactionalSyncService {
         String up = """
                 INSERT INTO public.doctors_dict(aria_number, aria_type, comment, external_id, name, last_seen, updated_at)
                 VALUES(:aria_number, :aria_type, :comment, :external_id, :name, :last_seen, now())
-                ON CONFLICT (external_id) DO UPDATE
+                ON CONFLICT (external_id, "name", aria_number, aria_type) DO UPDATE
                   SET aria_number   = EXCLUDED.aria_number,
                       aria_type     = EXCLUDED.aria_type,
                       "comment"     = EXCLUDED.comment,
