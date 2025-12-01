@@ -14,6 +14,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -52,12 +53,12 @@ public class SyncService {
         List<Map<String, Object>> batch = new ArrayList<>();
         for (LPU dto : list) {
             batch.add(Map.of(
-                    "external_id", dto.id(),
-                    "lpu_short_name", dto.lpuShortName(),
-                    "lpu_type", dto.lpuType(),
-                    "address", dto.address(),
-                    "phone", dto.phone(),
-                    "email", dto.email(),
+                    "external_id", Optional.of(dto.id()).orElse("UNKNOWN"),
+                    "lpu_short_name", Optional.of(dto.lpuShortName()).orElse("UNKNOWN"),
+                    "lpu_type", Optional.of(dto.lpuType()).orElse("UNKNOWN"),
+                    "address", Optional.of(dto.address()).orElse("UNKNOWN"),
+                    "phone", Optional.of(dto.phone()).orElse("UNKNOWN"),
+                    "email", Optional.of(dto.email()).orElse("UNKNOWN"),
                     "last_seen", today
             ));
             if (batch.size() >= BATCH_SIZE) {
@@ -73,11 +74,11 @@ public class SyncService {
         List<Map<String, Object>> batch = new ArrayList<>();
         for (Doctor dto : list) {
             batch.add(Map.of(
-                    "aria_number", dto.ariaNumber(),
-                    "aria_type", dto.ariaType(),
-                    "comment", dto.comment(),
-                    "external_id", dto.id(),
-                    "name", dto.name(),
+                    "aria_number", Optional.of(dto.ariaNumber()).orElse("UNKNOWN"),
+                    "aria_type", Optional.of(dto.ariaType()).orElse("UNKNOWN"),
+                    "comment", Optional.of(dto.comment()).orElse("UNKNOWN"),
+                    "external_id", Optional.of(dto.id()).orElse("UNKNOWN"),
+                    "name", Optional.of(dto.name()).orElse("UNKNOWN"),
                     //Тут еще бы специальность пихать, но пока оставим эту идею
                     "last_seen", today
             ));
