@@ -39,6 +39,15 @@ public class GorzdravService {
     }
 
     @NonNull
+    public List<LPU> getAllLPUs() {
+        var response = gorzdravClient.getAllLPUs();
+        if (response.success() == null || !response.success()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, response.message());
+        }
+        return response.result();
+    }
+
+    @NonNull
     public List<Specialty> getSpecialties(LPU lpu) {
         var response = gorzdravClient.getSpecialties(lpu);
         if (response.success() == null || !response.success()) {

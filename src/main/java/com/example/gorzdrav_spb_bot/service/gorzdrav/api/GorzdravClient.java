@@ -8,6 +8,9 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
+import java.util.Objects;
+
 @AllArgsConstructor
 public class GorzdravClient {
 
@@ -39,6 +42,20 @@ public class GorzdravClient {
                 url, HttpMethod.GET, httpEntity, LPUsResponse.class
         );
         return responseEntity.getBody();
+    }
+
+    public LPUsResponse getAllLPUs() {
+        String url = "https://gorzdrav.spb.ru/_api/api/v2/shared/lpus";
+
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.set("Content-type", "application/json");
+
+        HttpEntity<Object> httpEntity = new HttpEntity<>(null, httpHeaders);
+
+        ResponseEntity<LPUsResponse> responseEntity = restTemplate.exchange(
+                url, HttpMethod.GET, httpEntity, LPUsResponse.class
+        );
+        return Objects.requireNonNull(responseEntity.getBody());
     }
 
     public SpecialtiesResponse getSpecialties(LPU lpu) {
