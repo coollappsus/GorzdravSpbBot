@@ -27,7 +27,8 @@ public class SyncService {
     private final static int BATCH_SIZE = 500;
     private final static Long ADMIN_ID = 906044021L;
 
-    @Scheduled(cron = "0 0 23 * * *", zone = "Europe/Moscow")
+//    @Scheduled(cron = "0 0 23 * * *", zone = "Europe/Moscow")
+    @Scheduled(fixedDelay = 3600000) //Раз в 1 час
     public void dailySync() {
         try {
             LocalDate today = LocalDate.now();
