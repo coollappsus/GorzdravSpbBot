@@ -53,12 +53,12 @@ public class SyncService {
         List<Map<String, Object>> batch = new ArrayList<>();
         for (LPU dto : list) {
             batch.add(Map.of(
-                    "external_id", Optional.of(dto.id()).orElse("UNKNOWN"),
-                    "lpu_short_name", Optional.of(dto.lpuShortName()).orElse("UNKNOWN"),
-                    "lpu_type", Optional.of(dto.lpuType()).orElse("UNKNOWN"),
-                    "address", Optional.of(dto.address()).orElse("UNKNOWN"),
-                    "phone", Optional.of(dto.phone()).orElse("UNKNOWN"),
-                    "email", Optional.of(dto.email()).orElse("UNKNOWN"),
+                    "external_id", Optional.ofNullable(dto.id()).orElse("UNKNOWN"),
+                    "lpu_short_name", Optional.ofNullable(dto.lpuShortName()).orElse("UNKNOWN"),
+                    "lpu_type", Optional.ofNullable(dto.lpuType()).orElse("UNKNOWN"),
+                    "address", Optional.ofNullable(dto.address()).orElse("UNKNOWN"),
+                    "phone", Optional.ofNullable(dto.phone()).orElse("UNKNOWN"),
+                    "email", Optional.ofNullable(dto.email()).orElse("UNKNOWN"),
                     "last_seen", today
             ));
             if (batch.size() >= BATCH_SIZE) {
@@ -74,11 +74,11 @@ public class SyncService {
         List<Map<String, Object>> batch = new ArrayList<>();
         for (Doctor dto : list) {
             batch.add(Map.of(
-                    "aria_number", Optional.of(dto.ariaNumber()).orElse("UNKNOWN"),
-                    "aria_type", Optional.of(dto.ariaType()).orElse("UNKNOWN"),
-                    "comment", Optional.of(dto.comment()).orElse("UNKNOWN"),
-                    "external_id", Optional.of(dto.id()).orElse("UNKNOWN"),
-                    "name", Optional.of(dto.name()).orElse("UNKNOWN"),
+                    "aria_number", Optional.ofNullable(dto.ariaNumber()).orElse("UNKNOWN"),
+                    "aria_type", Optional.ofNullable(dto.ariaType()).orElse("UNKNOWN"),
+                    "comment", Optional.ofNullable(dto.comment()).orElse("UNKNOWN"),
+                    "external_id", Optional.ofNullable(dto.id()).orElse("UNKNOWN"),
+                    "name", Optional.ofNullable(dto.name()).orElse("UNKNOWN"),
                     //Тут еще бы специальность пихать, но пока оставим эту идею
                     "last_seen", today
             ));
