@@ -103,7 +103,12 @@ public class SyncService {
     }
 
     private List<Specialty> getSpecialties(LPU lpu) {
-        return gorzdravService.getSpecialties(lpu);
+        try {
+            return gorzdravService.getSpecialties(lpu);
+        } catch (Exception e) {
+            log.error("Произошла ошибка при сборе специалистов в ЛПУ " + lpu.lpuShortName() + "\n" + e.getMessage());
+            return new ArrayList<>();
+        }
     }
 
     private List<LPU> getLpus() {
