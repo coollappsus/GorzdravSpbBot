@@ -42,17 +42,18 @@ public class UpsertTransactionalSyncService {
     @Transactional
     protected void upsertDoctors(List<Map<String, Object>> batch) {
         String up = """
-                INSERT INTO public.doctors_dict(aria_number, aria_type, comment, external_id, name, last_seen, updated_at)
-                VALUES(:aria_number, :aria_type, :comment, :external_id, :name, :last_seen, now())
-                ON CONFLICT (external_id, "name", aria_number, aria_type) DO UPDATE
-                  SET aria_number   = EXCLUDED.aria_number,
-                      aria_type     = EXCLUDED.aria_type,
-                      "comment"     = EXCLUDED.comment,
-                      external_id   = EXCLUDED.external_id,
-                      "name"        = EXCLUDED.name,
-                      last_seen     = EXCLUDED.last_seen,
-                      updated_at    = now(),
-                      deleted       = false
+                INSERT INTO public.doctors_dict(aria_number, aria_type, comment, external_id, name, last_seen, updated_at, lpu_external_id)
+                VALUES(:aria_number, :aria_type, :comment, :external_id, :name, :last_seen, now(), :lpu_external_id)
+                ON CONFLICT (external_id, "name", aria_number, aria_type, lpu_external_id) DO UPDATE
+                  SET aria_number       = EXCLUDED.aria_number,
+                      aria_type         = EXCLUDED.aria_type,
+                      "comment"         = EXCLUDED.comment,
+                      external_id       = EXCLUDED.external_id,
+                      "name"            = EXCLUDED.name,
+                      last_seen         = EXCLUDED.last_seen,
+                      updated_at        = now(),
+                      deleted           = false,
+                      lpu_external_id   = EXCLUDED.lpu_external_id
                 """;
         int[] res = db.batchUpdate(up,
                 SqlParameterSourceUtils.createBatch(batch.toArray()));

@@ -11,10 +11,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -28,7 +25,8 @@ public class SyncService {
     private final static int BATCH_SIZE = 500;
     private final static Long ADMIN_ID = 906044021L;
 
-    @Scheduled(cron = "0 0 23 * * *", zone = "Europe/Moscow")
+//    @Scheduled(cron = "0 0 23 * * *", zone = "Europe/Moscow")
+    @Scheduled(fixedDelay = 3600000) //Раз в 1 час
     public void dailySync() {
         try {
             LocalDate today = LocalDate.now();
@@ -69,17 +67,18 @@ public class SyncService {
     }
 
     private void syncDoctors(LocalDate today) {
-        List<Doctor> list = getDoctors();
+        Map<Doctor, LPU> list = getDoctors();
         List<Map<String, Object>> batch = new ArrayList<>();
-        for (Doctor dto : list) {
+        for (Map.Entry<Doctor, LPU> dto : list.entrySet()) {
             batch.add(Map.of(
-                    "aria_number", Optional.ofNullable(dto.ariaNumber()).orElse("UNKNOWN"),
-                    "aria_type", Optional.ofNullable(dto.ariaType()).orElse("UNKNOWN"),
-                    "comment", Optional.ofNullable(dto.comment()).orElse("UNKNOWN"),
-                    "external_id", Optional.ofNullable(dto.id()).orElse("UNKNOWN"),
-                    "name", Optional.ofNullable(dto.name()).orElse("UNKNOWN"),
+                    "aria_number", Optional.ofNullable(dto.getKey().ariaNumber()).orElse("UNKNOWN"),
+                    "aria_type", Optional.ofNullable(dto.getKey().ariaType()).orElse("UNKNOWN"),
+                    "comment", Optional.ofNullable(dto.getKey().comment()).orElse("UNKNOWN"),
+                    "external_id", Optional.ofNullable(dto.getKey().id()).orElse("UNKNOWN"),
+                    "name", Optional.ofNullable(dto.getKey().name()).orElse("UNKNOWN"),
                     //Тут еще бы специальность пихать, но пока оставим эту идею
-                    "last_seen", today
+                    "last_seen", today,
+                    "lpu_external_id", dto.getValue().id()
             ));
             if (batch.size() >= BATCH_SIZE) {
                 upsertSyncService.upsertDoctors(batch);
@@ -91,11 +90,14 @@ public class SyncService {
         }
     }
 
-    private List<Doctor> getDoctors() {
-        List<Doctor> doctors = new ArrayList<>();
+    private Map<Doctor, LPU> getDoctors() {
+        Map<Doctor, LPU> doctors = new HashMap<>();
         for (LPU lpu : getLpus()) {
             for (Specialty specialty : getSpecialties(lpu)) {
-                doctors.addAll(getDoctors(lpu, specialty));
+                List<Doctor> doctorList = getDoctors(lpu, specialty);
+                for (Doctor doctor : doctorList) {
+                    doctors.put(doctor, lpu);
+                }
             }
         }
         return doctors;
