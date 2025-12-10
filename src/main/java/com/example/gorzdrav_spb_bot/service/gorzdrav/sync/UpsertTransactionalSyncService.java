@@ -42,14 +42,15 @@ public class UpsertTransactionalSyncService {
     @Transactional
     protected void upsertDoctors(List<Map<String, Object>> batch) {
         String up = """
-                INSERT INTO public.doctors_dict(aria_number, aria_type, comment, external_id, name, last_seen, updated_at, lpu_external_id)
-                VALUES(:aria_number, :aria_type, :comment, :external_id, :name, :last_seen, now(), :lpu_external_id)
+                INSERT INTO public.doctors_dict(aria_number, aria_type, comment, external_id, name, specialty, last_seen, updated_at, lpu_external_id)
+                VALUES(:aria_number, :aria_type, :comment, :external_id, :name, :specialty, :last_seen, now(), :lpu_external_id)
                 ON CONFLICT (external_id, "name", aria_number, aria_type, lpu_external_id) DO UPDATE
                   SET aria_number       = EXCLUDED.aria_number,
                       aria_type         = EXCLUDED.aria_type,
                       "comment"         = EXCLUDED.comment,
                       external_id       = EXCLUDED.external_id,
                       "name"            = EXCLUDED.name,
+                      specialty         = EXCLUDED.specialty,
                       last_seen         = EXCLUDED.last_seen,
                       updated_at        = now(),
                       deleted           = false,

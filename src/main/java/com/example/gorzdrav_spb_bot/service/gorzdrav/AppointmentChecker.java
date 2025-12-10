@@ -2,6 +2,7 @@ package com.example.gorzdrav_spb_bot.service.gorzdrav;
 
 import com.example.gorzdrav_spb_bot.model.MedicalCard;
 import com.example.gorzdrav_spb_bot.model.Task;
+import com.example.gorzdrav_spb_bot.repository.DoctorDictRepositoryImpl;
 import com.example.gorzdrav_spb_bot.repository.TaskRepository;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.Appointment;
 import com.example.gorzdrav_spb_bot.service.telegram.TelegramAsyncMessageSender;
@@ -31,10 +32,15 @@ public class AppointmentChecker {
             🚑Лечебно-профилактическое учреждение по адресу %s
             ⏱Время - %s
             👤ФИО пациента - %s
-            Задача №%s
+            🧷Задача №%s
+            """;
+    private static final String FULL_MESSAGE_TEXT = MESSAGE_TEXT + """
+            \nФИО врача - %s
+            Специальность - %s
             """;
     private static final String ERROR_MESSAGE_TEXT = """
-            ❌Талончик был найден, но произошла ошибка во время записи к врачу. Задача №%s
+            ❌Талончик был найден, но произошла ошибка во время записи к врачу.
+            🧷Задача №%s
             Ошибка на стороне Горздрава, либо нарушены ограничения для записи к данному специалисту. Подробнее в ошибке.
             Данная задача на отслеживание отменена во избежание спама в ТГ.
             %s
@@ -45,6 +51,7 @@ public class AppointmentChecker {
     private static final ZoneId zone = ZoneId.of("Europe/Moscow");
 
     private final TaskRepository taskRepository;
+    private final DoctorDictRepositoryImpl doctorDictRepository;
     private final TelegramAsyncMessageSender telegramAsyncMessageSender;
     private final GorzdravService gorzdravService;
 
@@ -139,9 +146,18 @@ public class AppointmentChecker {
     private String getMessageByAppointment(Appointment appointment, Task task) {
         MedicalCard medicalCard = task.getMedicalCard();
         Long taskId = task.getId();
-        return MESSAGE_TEXT.formatted(appointment.address(),
+        var doctorInfo = doctorDictRepository.getDoctorInfoByDoctorExternalIdAndLpuExternalId(task.getDoctorId(),
+                task.getLpuId());
+
+        if (doctorInfo == null) {
+            return MESSAGE_TEXT.formatted(appointment.address(),
+                    FIRST_DATE_FORMAT.format(appointment.visitStart()) + " - " + SECOND_DATE_FORMAT.format(appointment.visitEnd()),
+                    medicalCard.getLastName() + " " + medicalCard.getFirstName() + " " + medicalCard.getMiddleName(), taskId);
+        }
+        return FULL_MESSAGE_TEXT.formatted(appointment.address(),
                 FIRST_DATE_FORMAT.format(appointment.visitStart()) + " - " + SECOND_DATE_FORMAT.format(appointment.visitEnd()),
-                medicalCard.getLastName() + " " + medicalCard.getFirstName() + " " + medicalCard.getMiddleName(), taskId);
+                medicalCard.getLastName() + " " + medicalCard.getFirstName() + " " + medicalCard.getMiddleName(), taskId,
+                doctorInfo.doctor().name(), doctorInfo.specialty().name());
     }
 
     private Optional<Appointment> softFiltering(Collection<Appointment> allAppointments, Task task) {

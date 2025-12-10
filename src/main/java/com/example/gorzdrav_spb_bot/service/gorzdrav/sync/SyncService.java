@@ -4,6 +4,7 @@ import com.example.gorzdrav_spb_bot.service.gorzdrav.GorzdravService;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.Doctor;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.LPU;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.Specialty;
+import com.example.gorzdrav_spb_bot.service.gorzdrav.sync.dto.DoctorInfo;
 import com.example.gorzdrav_spb_bot.service.telegram.TelegramAsyncMessageSender;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -66,18 +67,18 @@ public class SyncService {
     }
 
     private void syncDoctors(LocalDate today) {
-        Map<Doctor, LPU> list = getDoctors();
+        List<DoctorInfo> list = getDoctors();
         List<Map<String, Object>> batch = new ArrayList<>();
-        for (Map.Entry<Doctor, LPU> dto : list.entrySet()) {
+        for (DoctorInfo dto : list) {
             batch.add(Map.of(
-                    "aria_number", Optional.ofNullable(dto.getKey().ariaNumber()).orElse("UNKNOWN"),
-                    "aria_type", Optional.ofNullable(dto.getKey().ariaType()).orElse("UNKNOWN"),
-                    "comment", Optional.ofNullable(dto.getKey().comment()).orElse("UNKNOWN"),
-                    "external_id", Optional.ofNullable(dto.getKey().id()).orElse("UNKNOWN"),
-                    "name", Optional.ofNullable(dto.getKey().name()).orElse("UNKNOWN"),
-                    //Тут еще бы специальность пихать, но пока оставим эту идею
+                    "aria_number", Optional.ofNullable(dto.doctor().ariaNumber()).orElse("UNKNOWN"),
+                    "aria_type", Optional.ofNullable(dto.doctor().ariaType()).orElse("UNKNOWN"),
+                    "comment", Optional.ofNullable(dto.doctor().comment()).orElse("UNKNOWN"),
+                    "external_id", Optional.ofNullable(dto.doctor().id()).orElse("UNKNOWN"),
+                    "name", Optional.ofNullable(dto.doctor().name()).orElse("UNKNOWN"),
+                    "specialty", dto.specialty().name(),
                     "last_seen", today,
-                    "lpu_external_id", dto.getValue().id()
+                    "lpu_external_id", dto.lpu().id()
             ));
             if (batch.size() >= BATCH_SIZE) {
                 upsertSyncService.upsertDoctors(batch);
@@ -89,13 +90,17 @@ public class SyncService {
         }
     }
 
-    private Map<Doctor, LPU> getDoctors() {
-        Map<Doctor, LPU> doctors = new HashMap<>();
+    private List<DoctorInfo> getDoctors() {
+        List<DoctorInfo> doctors = new ArrayList<>();
         for (LPU lpu : getLpus()) {
             for (Specialty specialty : getSpecialties(lpu)) {
                 List<Doctor> doctorList = getDoctors(lpu, specialty);
                 for (Doctor doctor : doctorList) {
-                    doctors.put(doctor, lpu);
+                    doctors.add(DoctorInfo.builder()
+                            .doctor(doctor)
+                            .lpu(lpu)
+                            .specialty(specialty)
+                            .build());
                 }
             }
         }
