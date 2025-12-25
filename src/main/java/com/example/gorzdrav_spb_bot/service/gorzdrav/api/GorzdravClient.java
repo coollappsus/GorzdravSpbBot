@@ -8,7 +8,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.List;
 import java.util.Objects;
 
 @AllArgsConstructor
@@ -73,7 +72,7 @@ public class GorzdravClient {
     }
 
     public DoctorsResponse getDoctors(LPU lpu, Specialty specialty) {
-        String url = "https://gorzdrav.spb.ru/_api/api/v2/schedule/lpu/%s/speciality/%d/doctors"
+        String url = "https://gorzdrav.spb.ru/_api/api/v2/schedule/lpu/%s/speciality/%s/doctors"
                 .formatted(lpu.id(), specialty.id());
 
         HttpHeaders httpHeaders = new HttpHeaders();
