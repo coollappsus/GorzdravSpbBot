@@ -6,7 +6,7 @@ import java.util.Date;
 
 @Builder
 public record Specialty(
-        Integer id,
+        String id,
         Integer ferId,
         String name,
         Integer countFreeParticipant,
