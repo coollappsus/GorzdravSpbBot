@@ -35,7 +35,7 @@ public class TrackingDoctorHandler implements TelegramUpdateMessageHandler {
         LPU lpu = contextUtil.getContextObject(userState, LPU.class);
         Specialty specialty = contextUtil.getContextObject(userState, Specialty.class);
         Doctor doctor = gorzdravService.getDoctors(specialty, lpu).stream()
-                .filter(d -> d.name().equals(message.getText().trim()))
+                .filter(d -> message.getText().equals(d.name().trim()))
                 .findFirst()
                 .orElseThrow();
         userState.getContext().add(doctor);
