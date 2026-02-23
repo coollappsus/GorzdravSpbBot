@@ -42,7 +42,7 @@ public class TrackingTimePreferenceHandler implements TelegramUpdateMessageHandl
     @Override
     public BotApiMethod<?> processMessage(Message message, UserState userState) {
         TimePreference timePreference = Arrays.stream(TimePreference.values())
-                .filter(tp -> tp.getAdditionalName().equals(message.getText()))
+                .filter(tp -> tp.getAdditionalName().equals(message.getText().trim()))
                 .findFirst()
                 .orElseThrow();
         userState.getContext().add(timePreference);

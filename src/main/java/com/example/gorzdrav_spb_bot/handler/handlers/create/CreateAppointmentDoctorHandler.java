@@ -34,7 +34,7 @@ public class CreateAppointmentDoctorHandler implements TelegramUpdateMessageHand
         LPU lpu = contextUtil.getContextObject(userState, LPU.class);
         Specialty specialty = contextUtil.getContextObject(userState, Specialty.class);
         Doctor doctor = gorzdravService.getDoctors(specialty, lpu).stream()
-                .filter(d -> d.name().equals(message.getText()))
+                .filter(d -> d.name().equals(message.getText().trim()))
                 .findFirst()
                 .orElseThrow();
 
