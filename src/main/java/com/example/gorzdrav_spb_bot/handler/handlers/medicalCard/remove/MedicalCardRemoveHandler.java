@@ -1,18 +1,17 @@
 package com.example.gorzdrav_spb_bot.handler.handlers.medicalCard.remove;
 
-import com.example.gorzdrav_spb_bot.handler.TelegramUpdateMessageHandler;
+import com.example.gorzdrav_spb_bot.handler.VkUpdateMessageHandler;
 import com.example.gorzdrav_spb_bot.handler.dao.UserState;
+import com.example.gorzdrav_spb_bot.handler.dao.VkResponse;
 import com.example.gorzdrav_spb_bot.handler.handlers.StartHandler;
 import com.example.gorzdrav_spb_bot.model.MedicalCard;
 import com.example.gorzdrav_spb_bot.repository.MedicalCardRepository;
+import com.vk.api.sdk.objects.messages.Message;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Message;
 
 @Component
-public class MedicalCardRemoveHandler implements TelegramUpdateMessageHandler {
+public class MedicalCardRemoveHandler implements VkUpdateMessageHandler {
 
     private static final String RESPONSE_TEXT_REMOVE = "Мед.карта удалена";
 
@@ -25,16 +24,15 @@ public class MedicalCardRemoveHandler implements TelegramUpdateMessageHandler {
     }
 
     @Override
-    public BotApiMethod<?> processMessage(Message message, UserState userState) {
+    public VkResponse processMessage(Message message, UserState userState) {
         userState.getContext().stream()
                 .filter(mc -> mc instanceof MedicalCard)
                 .map(MedicalCard.class::cast)
                 .findFirst()
                 .ifPresent(medicalCardRepository::delete);
         userState.setHandler(startHandler);
-        return SendMessage.builder()
-                .chatId(message.getChatId())
-                .text(RESPONSE_TEXT_REMOVE)
+        return VkResponse.builder()
+                .message(RESPONSE_TEXT_REMOVE)
                 .build();
     }
 }

@@ -1,14 +1,13 @@
 package com.example.gorzdrav_spb_bot.handler.handlers.tracking;
 
-import com.example.gorzdrav_spb_bot.handler.TelegramUpdateMessageHandler;
+import com.example.gorzdrav_spb_bot.handler.VkUpdateMessageHandler;
 import com.example.gorzdrav_spb_bot.handler.dao.UserState;
+import com.example.gorzdrav_spb_bot.handler.dao.VkResponse;
 import com.example.gorzdrav_spb_bot.model.TimePreference;
-import com.example.gorzdrav_spb_bot.service.telegram.KeyboardFactory;
+import com.example.gorzdrav_spb_bot.service.vk.KeyboardFactory;
+import com.vk.api.sdk.objects.messages.Message;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -18,7 +17,7 @@ import java.util.List;
 
 @Component
 @AllArgsConstructor
-public class TrackingDayPreferenceHandler implements TelegramUpdateMessageHandler {
+public class TrackingDayPreferenceHandler implements VkUpdateMessageHandler {
 
     private static final String RESPONSE_TEXT_APPOINTMENT = """
             Выберите предпочитаемое время для записи.
@@ -32,7 +31,7 @@ public class TrackingDayPreferenceHandler implements TelegramUpdateMessageHandle
     private final TrackingTimePreferenceHandler trackingTimePreferenceHandler;
 
     @Override
-    public BotApiMethod<?> processMessage(Message message, UserState userState) {
+    public VkResponse processMessage(Message message, UserState userState) {
         if (!message.getText().equals("Не важно")) {
             Date date = stringToDate(message.getText());
             userState.getContext().add(date);
@@ -43,10 +42,9 @@ public class TrackingDayPreferenceHandler implements TelegramUpdateMessageHandle
                 .toList();
         var keyboard = keyboardFactory.createReplyKeyboard(preferenceTimeStrings);
         userState.setHandler(trackingTimePreferenceHandler);
-        return SendMessage.builder()
-                .chatId(message.getChatId())
-                .replyMarkup(keyboard)
-                .text(RESPONSE_TEXT_APPOINTMENT)
+        return VkResponse.builder()
+                .message(RESPONSE_TEXT_APPOINTMENT)
+                .keyboard(keyboard)
                 .build();
     }
 

@@ -1,19 +1,18 @@
 package com.example.gorzdrav_spb_bot.handler.handlers.find;
 
-import com.example.gorzdrav_spb_bot.handler.TelegramUpdateMessageHandler;
+import com.example.gorzdrav_spb_bot.handler.VkUpdateMessageHandler;
 import com.example.gorzdrav_spb_bot.handler.dao.UserState;
+import com.example.gorzdrav_spb_bot.handler.dao.VkResponse;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.GorzdravService;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.District;
-import com.example.gorzdrav_spb_bot.service.telegram.KeyboardFactory;
+import com.example.gorzdrav_spb_bot.service.vk.KeyboardFactory;
+import com.vk.api.sdk.objects.messages.Message;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Message;
 
 @Component
 @AllArgsConstructor
-public class FindAppointmentDistrictHandler implements TelegramUpdateMessageHandler {
+public class FindAppointmentDistrictHandler implements VkUpdateMessageHandler {
 
     private static final String RESPONSE_TEXT_LPU = "Выберите лечебно профилактическое учреждение";
 
@@ -22,7 +21,7 @@ public class FindAppointmentDistrictHandler implements TelegramUpdateMessageHand
     private final FindAppointmentLpuHandler findAppointmentLpuHandler;
 
     @Override
-    public BotApiMethod<?> processMessage(Message message, UserState userState) {
+    public VkResponse processMessage(Message message, UserState userState) {
         String districtName = message.getText();
         District district = gorzdravService.getDistricts().stream()
                 .filter(d -> d.name().equals(districtName))
@@ -35,10 +34,9 @@ public class FindAppointmentDistrictHandler implements TelegramUpdateMessageHand
         var keyboard = keyboardFactory.createReplyKeyboard(lpuName);
 
         userState.setHandler(findAppointmentLpuHandler);
-        return SendMessage.builder()
-                .chatId(message.getChatId())
-                .replyMarkup(keyboard)
-                .text(RESPONSE_TEXT_LPU)
+        return VkResponse.builder()
+                .keyboard(keyboard)
+                .message(RESPONSE_TEXT_LPU)
                 .build();
     }
 }

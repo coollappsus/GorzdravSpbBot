@@ -1,16 +1,15 @@
 package com.example.gorzdrav_spb_bot.handler.handlers.medicalCard.add;
 
-import com.example.gorzdrav_spb_bot.handler.TelegramUpdateMessageHandler;
+import com.example.gorzdrav_spb_bot.handler.VkUpdateMessageHandler;
 import com.example.gorzdrav_spb_bot.handler.dao.UserState;
+import com.example.gorzdrav_spb_bot.handler.dao.VkResponse;
 import com.example.gorzdrav_spb_bot.model.MedicalCard;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.GorzdravService;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.District;
-import com.example.gorzdrav_spb_bot.service.telegram.KeyboardFactory;
+import com.example.gorzdrav_spb_bot.service.vk.KeyboardFactory;
+import com.vk.api.sdk.objects.messages.Message;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -18,7 +17,7 @@ import java.util.Date;
 
 @Component
 @AllArgsConstructor
-public class AddMedCardBirthDateHandler implements TelegramUpdateMessageHandler {
+public class AddMedCardBirthDateHandler implements VkUpdateMessageHandler {
 
     private static final String RESPONSE_TEXT_DISCRICT = "Выберите район";
 
@@ -27,7 +26,7 @@ public class AddMedCardBirthDateHandler implements TelegramUpdateMessageHandler 
     private final AddMedCardDiscrictHandler addMedCardDiscrictHandler;
 
     @Override
-    public BotApiMethod<?> processMessage(Message message, UserState userState) {
+    public VkResponse processMessage(Message message, UserState userState) {
         Date date = stringToDate(message.getText());
         userState.getContext().stream()
                 .filter(mc -> mc instanceof MedicalCard)
@@ -42,10 +41,9 @@ public class AddMedCardBirthDateHandler implements TelegramUpdateMessageHandler 
         var keyboard = keyboardFactory.createReplyKeyboard(districtsName);
 
         userState.setHandler(addMedCardDiscrictHandler);
-        return SendMessage.builder()
-                .chatId(message.getChatId())
-                .replyMarkup(keyboard)
-                .text(RESPONSE_TEXT_DISCRICT)
+        return VkResponse.builder()
+                .message(RESPONSE_TEXT_DISCRICT)
+                .keyboard(keyboard)
                 .build();
     }
 

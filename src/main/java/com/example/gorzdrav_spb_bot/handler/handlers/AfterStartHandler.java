@@ -1,19 +1,18 @@
 package com.example.gorzdrav_spb_bot.handler.handlers;
 
-import com.example.gorzdrav_spb_bot.handler.TelegramUpdateMessageHandler;
+import com.example.gorzdrav_spb_bot.handler.VkUpdateMessageHandler;
 import com.example.gorzdrav_spb_bot.handler.UserConstResponseText;
 import com.example.gorzdrav_spb_bot.handler.dao.UserState;
+import com.example.gorzdrav_spb_bot.handler.dao.VkResponse;
 import com.example.gorzdrav_spb_bot.handler.handlers.medicalCard.add.AddMedCardFirstNameHandler;
 import com.example.gorzdrav_spb_bot.handler.util.ContextUtil;
 import com.example.gorzdrav_spb_bot.model.MedicalCard;
 import com.example.gorzdrav_spb_bot.model.User;
 import com.example.gorzdrav_spb_bot.repository.MedicalCardRepository;
-import com.example.gorzdrav_spb_bot.service.telegram.KeyboardFactory;
+import com.example.gorzdrav_spb_bot.service.vk.KeyboardFactory;
+import com.vk.api.sdk.objects.messages.Message;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.util.Arrays;
 
@@ -21,7 +20,7 @@ import static com.example.gorzdrav_spb_bot.handler.UserConstResponseText.*;
 
 @Component
 @AllArgsConstructor
-public class AfterStartHandler implements TelegramUpdateMessageHandler {
+public class AfterStartHandler implements VkUpdateMessageHandler {
 
     private static final String RESPONSE_TEXT_FIRST_NAME = "Введите имя пациента";
     private static final String RESPONSE_TEXT_CHOSE_ACTION = "Выберите действие с мед.картой";
@@ -33,7 +32,7 @@ public class AfterStartHandler implements TelegramUpdateMessageHandler {
     private final ContextUtil contextUtil;
 
     @Override
-    public BotApiMethod<?> processMessage(Message message, UserState userState) {
+    public VkResponse processMessage(Message message, UserState userState) {
         var user = contextUtil.getContextObject(userState, User.class);
 
         if (message.getText().equals(ADD.getText())) {
@@ -45,10 +44,9 @@ public class AfterStartHandler implements TelegramUpdateMessageHandler {
                     .build();
             userState.getContext().add(medicalCard);
             userState.setHandler(addMedCardFirstNameHandler);
-            return SendMessage.builder()
-                    .replyMarkup(keyboardFactory.getReplyKeyboardRemove())
-                    .chatId(message.getChatId())
-                    .text(RESPONSE_TEXT_FIRST_NAME)
+            return VkResponse.builder()
+                    .keyboard(null)
+                    .message(RESPONSE_TEXT_FIRST_NAME)
                     .build();
         }
 
@@ -63,10 +61,9 @@ public class AfterStartHandler implements TelegramUpdateMessageHandler {
         var keyboard = keyboardFactory.createReplyKeyboard(responses);
         userState.setHandler(chooseActionHandler);
 
-        return SendMessage.builder()
-                .chatId(message.getChatId())
-                .replyMarkup(keyboard)
-                .text(RESPONSE_TEXT_CHOSE_ACTION)
+        return VkResponse.builder()
+                .keyboard(keyboard)
+                .message(RESPONSE_TEXT_CHOSE_ACTION)
                 .build();
     }
 

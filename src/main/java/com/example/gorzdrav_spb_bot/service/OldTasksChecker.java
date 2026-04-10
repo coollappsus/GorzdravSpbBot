@@ -2,7 +2,7 @@ package com.example.gorzdrav_spb_bot.service;
 
 import com.example.gorzdrav_spb_bot.model.Task;
 import com.example.gorzdrav_spb_bot.repository.TaskRepository;
-import com.example.gorzdrav_spb_bot.service.telegram.TelegramAsyncMessageSender;
+import com.example.gorzdrav_spb_bot.service.vk.VkAsyncMessageSender;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -26,7 +26,7 @@ public class OldTasksChecker {
             """;
 
     private final TaskRepository taskRepository;
-    private final TelegramAsyncMessageSender telegramAsyncMessageSender;
+    private final VkAsyncMessageSender vkAsyncMessageSender;
 
     @Scheduled(cron = "0 59 23 * * *", zone = "Europe/Moscow")
     public void checkAndRemoveOldTasks() {
@@ -41,11 +41,11 @@ public class OldTasksChecker {
         for (Task task : oldTasks) {
             task.setActiveStatus(false);
             taskRepository.save(task);
-            telegramAsyncMessageSender.sendMessageToUser(task.getOwner().getChatId(),
+            vkAsyncMessageSender.sendMessageToUser(task.getOwner().getChatId(),
                     MESSAGE_TEXT_FOR_USER.formatted(task.getId(), dateFormat.format(task.getPreferenceDate())));
         }
 
         log.info("Saving old tasks and notify admin");
-        telegramAsyncMessageSender.sendMessageToUser(ADMIN_ID, MESSAGE_TEXT.formatted(oldTasks.size()));
+        vkAsyncMessageSender.sendMessageToUser(ADMIN_ID, MESSAGE_TEXT.formatted(oldTasks.size()));
     }
 }

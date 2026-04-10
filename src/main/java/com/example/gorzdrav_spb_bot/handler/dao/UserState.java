@@ -1,17 +1,15 @@
 package com.example.gorzdrav_spb_bot.handler.dao;
 
-import com.example.gorzdrav_spb_bot.handler.TelegramUpdateMessageHandler;
+import com.example.gorzdrav_spb_bot.handler.VkUpdateMessageHandler;
 import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 import java.util.Set;
 
 @Builder
-@Getter
-@Setter
+@Data
 public class UserState {
         Long userId;
-        TelegramUpdateMessageHandler handler;
+        VkUpdateMessageHandler handler;
         Set<Object> context;
 }

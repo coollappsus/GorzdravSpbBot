@@ -1,22 +1,21 @@
 package com.example.gorzdrav_spb_bot.handler.handlers.tracking;
 
-import com.example.gorzdrav_spb_bot.handler.TelegramUpdateMessageHandler;
+import com.example.gorzdrav_spb_bot.handler.VkUpdateMessageHandler;
 import com.example.gorzdrav_spb_bot.handler.dao.UserState;
+import com.example.gorzdrav_spb_bot.handler.dao.VkResponse;
 import com.example.gorzdrav_spb_bot.handler.util.ContextUtil;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.GorzdravService;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.District;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.LPU;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.Specialty;
-import com.example.gorzdrav_spb_bot.service.telegram.KeyboardFactory;
+import com.example.gorzdrav_spb_bot.service.vk.KeyboardFactory;
+import com.vk.api.sdk.objects.messages.Message;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Message;
 
 @Component
 @AllArgsConstructor
-public class TrackingLpuHandler implements TelegramUpdateMessageHandler {
+public class TrackingLpuHandler implements VkUpdateMessageHandler {
 
     private static final String RESPONSE_TEXT_SPECIALTY = "Выберите специалиста для записи";
 
@@ -26,7 +25,7 @@ public class TrackingLpuHandler implements TelegramUpdateMessageHandler {
     private final ContextUtil contextUtil;
 
     @Override
-    public BotApiMethod<?> processMessage(Message message, UserState userState) {
+    public VkResponse processMessage(Message message, UserState userState) {
         District district = contextUtil.getContextObject(userState, District.class);
         String lpuName = message.getText().substring(0, message.getText().indexOf(" по адресу"));
         LPU lpu = gorzdravService.getLPUs(district).stream()
@@ -40,10 +39,9 @@ public class TrackingLpuHandler implements TelegramUpdateMessageHandler {
         var keyboard = keyboardFactory.createReplyKeyboard(specialtiesName);
         userState.setHandler(specialtyHandler);
         userState.getContext().add(lpu);
-        return SendMessage.builder()
-                .chatId(message.getChatId())
-                .replyMarkup(keyboard)
-                .text(RESPONSE_TEXT_SPECIALTY)
+        return VkResponse.builder()
+                .message(RESPONSE_TEXT_SPECIALTY)
+                .keyboard(keyboard)
                 .build();
     }
 }

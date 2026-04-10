@@ -5,7 +5,7 @@ import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.Doctor;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.LPU;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.Specialty;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.sync.dto.DoctorInfo;
-import com.example.gorzdrav_spb_bot.service.telegram.TelegramAsyncMessageSender;
+import com.example.gorzdrav_spb_bot.service.vk.VkAsyncMessageSender;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -21,7 +21,7 @@ public class SyncService {
 
     private final UpsertTransactionalSyncService upsertSyncService;
     private final GorzdravService gorzdravService;
-    private final TelegramAsyncMessageSender telegramAsyncMessageSender;
+    private final VkAsyncMessageSender vkAsyncMessageSender;
 
     private final static int BATCH_SIZE = 500;
     private final static Long ADMIN_ID = 906044021L;
@@ -37,11 +37,11 @@ public class SyncService {
             upsertSyncService.markStale("doctors_dict", today);
             log.info("=== SYNC END {} ===", today);
         } catch (Exception e) {
-            telegramAsyncMessageSender.sendMessageToUser(ADMIN_ID,
+            vkAsyncMessageSender.sendMessageToUser(ADMIN_ID,
                     "Произошла ошибка при синхронизации БД Горздрава\n" + e.getMessage());
             throw new RuntimeException(e);
         } finally {
-            telegramAsyncMessageSender.sendMessageToUser(ADMIN_ID, "Синхронизация с БД Горздрав завершена");
+            vkAsyncMessageSender.sendMessageToUser(ADMIN_ID, "Синхронизация с БД Горздрав завершена");
         }
     }
 

@@ -10,9 +10,9 @@ name: Java CI/CD with Maven
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "main-vk" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "main-vk"]
 
 jobs:
   build:

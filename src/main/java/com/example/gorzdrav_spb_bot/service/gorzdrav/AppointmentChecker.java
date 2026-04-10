@@ -5,7 +5,7 @@ import com.example.gorzdrav_spb_bot.model.Task;
 import com.example.gorzdrav_spb_bot.repository.DoctorDictRepositoryImpl;
 import com.example.gorzdrav_spb_bot.repository.TaskRepository;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.Appointment;
-import com.example.gorzdrav_spb_bot.service.telegram.TelegramAsyncMessageSender;
+import com.example.gorzdrav_spb_bot.service.vk.VkAsyncMessageSender;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateUtils;
@@ -52,7 +52,7 @@ public class AppointmentChecker {
 
     private final TaskRepository taskRepository;
     private final DoctorDictRepositoryImpl doctorDictRepository;
-    private final TelegramAsyncMessageSender telegramAsyncMessageSender;
+    private final VkAsyncMessageSender vkAsyncMessageSender;
     private final GorzdravService gorzdravService;
 
     @Scheduled(fixedDelay = 30000) //Раз в 30 секунд
@@ -135,10 +135,10 @@ public class AppointmentChecker {
         taskRepository.save(task);
 
         if (errorText == null) {
-            telegramAsyncMessageSender.sendMessageToUser(task.getOwner().getChatId(),
+            vkAsyncMessageSender.sendMessageToUser(task.getOwner().getChatId(),
                     getMessageByAppointment(appointment.get(), task));
         } else {
-            telegramAsyncMessageSender.sendMessageToUser(task.getOwner().getChatId(),
+            vkAsyncMessageSender.sendMessageToUser(task.getOwner().getChatId(),
                     ERROR_MESSAGE_TEXT.formatted(task.getId(), errorText));
         }
     }

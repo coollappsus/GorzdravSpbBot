@@ -1,7 +1,8 @@
 package com.example.gorzdrav_spb_bot.handler.handlers.find;
 
-import com.example.gorzdrav_spb_bot.handler.TelegramUpdateMessageHandler;
+import com.example.gorzdrav_spb_bot.handler.VkUpdateMessageHandler;
 import com.example.gorzdrav_spb_bot.handler.dao.UserState;
+import com.example.gorzdrav_spb_bot.handler.dao.VkResponse;
 import com.example.gorzdrav_spb_bot.handler.handlers.StartHandler;
 import com.example.gorzdrav_spb_bot.handler.util.ContextUtil;
 import com.example.gorzdrav_spb_bot.model.MedicalCard;
@@ -9,17 +10,16 @@ import com.example.gorzdrav_spb_bot.service.gorzdrav.GorzdravService;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.District;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.FullAppointment;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.LPU;
-import com.example.gorzdrav_spb_bot.service.telegram.TelegramAsyncMessageSender;
+import com.example.gorzdrav_spb_bot.service.vk.VkAsyncMessageSender;
+import com.vk.api.sdk.objects.messages.Message;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
-import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
 
 @Component
-public class FindAppointmentLpuHandler implements TelegramUpdateMessageHandler {
+public class FindAppointmentLpuHandler implements VkUpdateMessageHandler {
 
     private static final String RESPONSE_TEXT_HEADER = "📝Текущие записи:\n";
     private static final String NOT_FOUND_APPOINTMENT_RESPONSE_TEXT = "📝Записей не найдено!";
@@ -27,19 +27,19 @@ public class FindAppointmentLpuHandler implements TelegramUpdateMessageHandler {
     private final GorzdravService gorzdravService;
     private final StartHandler startHandler;
     private final ContextUtil contextUtil;
-    private final TelegramAsyncMessageSender telegramAsyncMessageSender;
+    private final VkAsyncMessageSender vkAsyncMessageSender;
 
     public FindAppointmentLpuHandler(GorzdravService gorzdravService, @Lazy StartHandler startHandler,
                                      ContextUtil contextUtil,
-                                     TelegramAsyncMessageSender telegramAsyncMessageSender) {
+                                     VkAsyncMessageSender vkAsyncMessageSender) {
         this.gorzdravService = gorzdravService;
         this.startHandler = startHandler;
         this.contextUtil = contextUtil;
-        this.telegramAsyncMessageSender = telegramAsyncMessageSender;
+        this.vkAsyncMessageSender = vkAsyncMessageSender;
     }
 
     @Override
-    public BotApiMethod<?> processMessage(Message message, UserState userState) {
+    public VkResponse processMessage(Message message, UserState userState) {
         District district = contextUtil.getContextObject(userState, District.class);
         String lpuName = message.getText().substring(0, message.getText().indexOf(" по адресу"));
         LPU lpu = gorzdravService.getLPUs(district).stream()
@@ -59,9 +59,9 @@ public class FindAppointmentLpuHandler implements TelegramUpdateMessageHandler {
         contextUtil.cleanAllContext(userState);
 
         if (appointments == null || appointments.isEmpty()) {
-            telegramAsyncMessageSender.sendMessageToUser(message.getChatId(), NOT_FOUND_APPOINTMENT_RESPONSE_TEXT);
+            vkAsyncMessageSender.sendMessageToUser(message.getFromId(), NOT_FOUND_APPOINTMENT_RESPONSE_TEXT);
         } else {
-            telegramAsyncMessageSender.sendMessageToUser(message.getChatId(), creationResponseText(appointments));
+            vkAsyncMessageSender.sendMessageToUser(message.getFromId(), creationResponseText(appointments));
         }
         return startHandler.processMessage(message, userState);
     }

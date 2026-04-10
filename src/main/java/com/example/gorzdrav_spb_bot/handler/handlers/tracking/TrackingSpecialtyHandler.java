@@ -1,22 +1,21 @@
 package com.example.gorzdrav_spb_bot.handler.handlers.tracking;
 
-import com.example.gorzdrav_spb_bot.handler.TelegramUpdateMessageHandler;
+import com.example.gorzdrav_spb_bot.handler.VkUpdateMessageHandler;
 import com.example.gorzdrav_spb_bot.handler.dao.UserState;
+import com.example.gorzdrav_spb_bot.handler.dao.VkResponse;
 import com.example.gorzdrav_spb_bot.handler.util.ContextUtil;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.GorzdravService;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.Doctor;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.LPU;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.Specialty;
-import com.example.gorzdrav_spb_bot.service.telegram.KeyboardFactory;
+import com.example.gorzdrav_spb_bot.service.vk.KeyboardFactory;
+import com.vk.api.sdk.objects.messages.Message;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Message;
 
 @Component
 @AllArgsConstructor
-public class TrackingSpecialtyHandler implements TelegramUpdateMessageHandler {
+public class TrackingSpecialtyHandler implements VkUpdateMessageHandler {
 
     private static final String RESPONSE_TEXT_DOCTOR = "Выберите доктора для записи";
 
@@ -26,7 +25,7 @@ public class TrackingSpecialtyHandler implements TelegramUpdateMessageHandler {
     private final ContextUtil contextUtil;
 
     @Override
-    public BotApiMethod<?> processMessage(Message message, UserState userState) {
+    public VkResponse processMessage(Message message, UserState userState) {
         LPU lpu = contextUtil.getContextObject(userState, LPU.class);
         String specialtyName = message.getText();
         Specialty specialty = gorzdravService.getSpecialties(lpu).stream()
@@ -40,10 +39,9 @@ public class TrackingSpecialtyHandler implements TelegramUpdateMessageHandler {
                 .toList();
         var keyboard = keyboardFactory.createReplyKeyboard(doctorsName);
         userState.setHandler(trackingDoctorHandler);
-        return SendMessage.builder()
-                .chatId(message.getChatId())
-                .replyMarkup(keyboard)
-                .text(RESPONSE_TEXT_DOCTOR)
+        return VkResponse.builder()
+                .keyboard(keyboard)
+                .message(RESPONSE_TEXT_DOCTOR)
                 .build();
     }
 }

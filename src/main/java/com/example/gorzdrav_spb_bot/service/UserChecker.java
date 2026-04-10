@@ -2,7 +2,7 @@ package com.example.gorzdrav_spb_bot.service;
 
 import com.example.gorzdrav_spb_bot.model.User;
 import com.example.gorzdrav_spb_bot.repository.UserRepository;
-import com.example.gorzdrav_spb_bot.service.telegram.TelegramAsyncMessageSender;
+import com.example.gorzdrav_spb_bot.service.vk.VkAsyncMessageSender;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -18,7 +18,7 @@ public class UserChecker {
     private final static Long ADMIN_ID = 906044021L;
 
     private final UserRepository userRepository;
-    private final TelegramAsyncMessageSender telegramAsyncMessageSender;
+    private final VkAsyncMessageSender vkAsyncMessageSender;
 
     @Scheduled(fixedDelay = 3600000) //Раз в 1 час
     public void checkNewUser() {
@@ -34,6 +34,6 @@ public class UserChecker {
         }
 
         log.info("notify admin about new users");
-        telegramAsyncMessageSender.sendMessageToUser(ADMIN_ID, sb.toString());
+        vkAsyncMessageSender.sendMessageToUser(ADMIN_ID, sb.toString());
     }
 }
