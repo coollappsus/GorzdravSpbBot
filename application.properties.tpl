@@ -1,5 +1,7 @@
 spring.application.name=gorzdrav_spb_bot
 token.bot=${BOT_TOKEN}
+vk.group-id=${VK_GROUP_ID}
+vk.access-token=${VK_ACCESS_TOKEN}
 
 
 spring.datasource.url=${DB_URL}
