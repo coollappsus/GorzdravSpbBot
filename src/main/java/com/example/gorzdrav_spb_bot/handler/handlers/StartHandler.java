@@ -7,6 +7,9 @@ import com.example.gorzdrav_spb_bot.model.User;
 import com.example.gorzdrav_spb_bot.repository.MedicalCardRepository;
 import com.example.gorzdrav_spb_bot.repository.UserRepository;
 import com.example.gorzdrav_spb_bot.service.vk.KeyboardFactory;
+import com.example.gorzdrav_spb_bot.service.vk.VkUsersService;
+import com.vk.api.sdk.exceptions.ApiException;
+import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.objects.messages.Message;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -26,14 +29,16 @@ public class StartHandler implements VkUpdateMessageHandler {
     private final UserRepository userRepository;
     private final KeyboardFactory keyboardFactory;
     private final VkUpdateMessageHandler afterStartHandler;
+    private final VkUsersService vkUsersService;
 
     @Override
     public VkResponse processMessage(Message message, UserState userState) {
         performNextState(userState);
         User user;
+        String userName = getUserName(message);
         if (!userRepository.existsByUserId(message.getFromId())) {
              user = User.builder()
-                    .userName(message.getOut().name())
+                    .userName(userName)
                     .userId(message.getFromId())
                     .chatId(message.getPeerId())
                     .build();
@@ -58,6 +63,14 @@ public class StartHandler implements VkUpdateMessageHandler {
                 .keyboard(keyboard)
                 .message(RESPONSE_TEXT)
                 .build();
+    }
+
+    private String getUserName(Message message) {
+        try {
+            return vkUsersService.getUserName(message.getFromId());
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
     }
 
     private void performNextState(UserState userState) {
