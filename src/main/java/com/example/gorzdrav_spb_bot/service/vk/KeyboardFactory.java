@@ -20,7 +20,8 @@ public class KeyboardFactory {
                     new KeyboardButton()
                             .setAction(new KeyboardButtonActionText()
                                     .setType(KeyboardButtonActionTextType.TEXT)
-                                    .setLabel(cmd))
+                                    .setLabel(cmd)
+                                    .setPayload(cmd))
                             .setColor(KeyboardButtonColor.PRIMARY)
             ));
         }
