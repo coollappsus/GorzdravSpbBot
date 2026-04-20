@@ -10,12 +10,12 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+import static com.example.gorzdrav_spb_bot.config.Const.ADMIN_ID;
+
 @Component
 @AllArgsConstructor
 @Slf4j
 public class UserChecker {
-
-    private final static Long ADMIN_ID = 906044021L;
 
     private final UserRepository userRepository;
     private final VkAsyncMessageSender vkAsyncMessageSender;

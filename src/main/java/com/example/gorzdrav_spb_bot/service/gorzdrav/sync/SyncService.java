@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.*;
 
+import static com.example.gorzdrav_spb_bot.config.Const.ADMIN_ID;
+
 @Service
 @Slf4j
 @AllArgsConstructor
@@ -24,7 +26,6 @@ public class SyncService {
     private final VkAsyncMessageSender vkAsyncMessageSender;
 
     private final static int BATCH_SIZE = 500;
-    private final static Long ADMIN_ID = 906044021L;
 
     @Scheduled(cron = "0 0 23 * * *", zone = "Europe/Moscow")
     public void dailySync() {

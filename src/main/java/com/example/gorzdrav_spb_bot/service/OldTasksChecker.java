@@ -12,13 +12,14 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import static com.example.gorzdrav_spb_bot.config.Const.ADMIN_ID;
+
 @Component
 @AllArgsConstructor
 @Slf4j
 public class OldTasksChecker {
 
     private final static SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
-    private final static Long ADMIN_ID = 906044021L;
     private final static String MESSAGE_TEXT = "OLD TASKS SUCCEEDED REMOVED. COUNT - %s";
     private final static String MESSAGE_TEXT_FOR_USER = """
             ❌Задача №%s была отменена по причине отсутствия актуальности.
