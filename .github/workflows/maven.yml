@@ -39,10 +39,12 @@ jobs:
     runs-on: self-hosted # Запускаем на раннере, который настроили до этого.
     needs: test # Запускаем только если джоба test прошла успешно
     env: # Пробрасываем секреты в среду шага deploy
-      BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-      DB_URL: ${{ secrets.DB_URL }}
+#      BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+#      DB_URL: ${{ secrets.DB_URL }}
       DB_USERNAME: ${{ secrets.DB_USERNAME }}
       DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      VK_GROUP_ID: ${{ secrets.VK_GROUP_ID }}
+      VK_ACCESS_TOKEN: ${{ secrets.VK_ACCESS_TOKEN }}
 
     steps:
       - name: Checkout repository
