@@ -16,12 +16,13 @@ public class KeyboardFactory {
 
         // Генерируем кнопки динамически на основе списка
         for (String cmd : allCommands) {
+            // Из-за ограничений вк в 40 символов
+            cmd = cmd.substring(0, 39);
             buttons.add(Collections.singletonList(
                     new KeyboardButton()
                             .setAction(new KeyboardButtonActionText()
                                     .setType(KeyboardButtonActionTextType.TEXT)
-                                    .setLabel(cmd)
-                                    .setPayload(cmd))
+                                    .setLabel(cmd))
                             .setColor(KeyboardButtonColor.PRIMARY)
             ));
         }
