@@ -39,8 +39,7 @@ jobs:
     runs-on: self-hosted # Запускаем на раннере, который настроили до этого.
     needs: test # Запускаем только если джоба test прошла успешно
     env: # Пробрасываем секреты в среду шага deploy
-#      BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-#      DB_URL: ${{ secrets.DB_URL }}
+      DB_URL: ${{ secrets.DB_URL }}
       DB_USERNAME: ${{ secrets.DB_USERNAME }}
       DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
       VK_GROUP_ID: ${{ secrets.VK_GROUP_ID }}
@@ -54,10 +53,11 @@ jobs:
       - name: Generate .env file
         run: |
           cat <<EOF > .env
-          BOT_TOKEN=${BOT_TOKEN}
           DB_URL=${DB_URL}
           DB_USERNAME=${DB_USERNAME}
           DB_PASSWORD=${DB_PASSWORD}
+          VK_GROUP_ID=${VK_GROUP_ID}
+          VK_ACCESS_TOKEN=${VK_ACCESS_TOKEN}
           EOF
 
       # Рендерим application.properties.tpl из шаблона
