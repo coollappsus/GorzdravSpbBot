@@ -16,17 +16,23 @@ public class KeyboardFactory {
 
         // Генерируем кнопки динамически на основе списка
         for (String cmd : allCommands) {
-            // Из-за ограничений вк в 40 символов
-            cmd = cmd.substring(0, 39);
             buttons.add(Collections.singletonList(
                     new KeyboardButton()
                             .setAction(new KeyboardButtonActionText()
                                     .setType(KeyboardButtonActionTextType.TEXT)
-                                    .setLabel(cmd))
+                                    .setLabel(truncateLabel(cmd)))
                             .setColor(KeyboardButtonColor.PRIMARY)
             ));
         }
 
         return new Keyboard().setButtons(buttons).setOneTime(false);
+    }
+
+    // Из-за ограничений вк в 40 символов
+    public String truncateLabel(String text) {
+        if (text == null || text.length() <= 40) {
+            return text;
+        }
+        return text.substring(0, 40);
     }
 }
