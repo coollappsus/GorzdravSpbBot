@@ -48,7 +48,7 @@ public class CancelAppointmentLpuHandler implements VkUpdateMessageHandler {
     @Override
     public VkResponse processMessage(Message message, UserState userState) {
         District district = contextUtil.getContextObject(userState, District.class);
-        String lpuName = message.getText().substring(0, message.getText().indexOf(" по адресу"));
+        String lpuName = message.getText();
         LPU lpu = gorzdravService.getLPUs(district).stream()
                 .filter(l -> l.lpuShortName().equals(lpuName))
                 .findFirst()

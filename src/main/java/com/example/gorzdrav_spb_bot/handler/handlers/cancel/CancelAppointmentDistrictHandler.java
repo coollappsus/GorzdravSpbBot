@@ -5,6 +5,7 @@ import com.example.gorzdrav_spb_bot.handler.dao.UserState;
 import com.example.gorzdrav_spb_bot.handler.dao.VkResponse;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.GorzdravService;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.District;
+import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.LPU;
 import com.example.gorzdrav_spb_bot.service.vk.KeyboardFactory;
 import com.vk.api.sdk.objects.messages.Message;
 import lombok.AllArgsConstructor;
@@ -29,7 +30,7 @@ public class CancelAppointmentDistrictHandler implements VkUpdateMessageHandler 
         userState.getContext().add(district);
 
         var lpuName = gorzdravService.getLPUs(district).stream()
-                .map(lpu -> lpu.lpuShortName() + " по адресу " + lpu.address())
+                .map(LPU::lpuShortName)
                 .toList();
         var keyboard = keyboardFactory.createReplyKeyboard(lpuName);
 
