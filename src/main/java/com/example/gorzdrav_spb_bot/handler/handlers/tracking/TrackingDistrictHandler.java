@@ -11,15 +11,17 @@ import com.vk.api.sdk.objects.messages.Message;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.stream.Collectors;
+
 @Component
 @AllArgsConstructor
 public class TrackingDistrictHandler implements VkUpdateMessageHandler {
 
-    private static final String RESPONSE_TEXT_LPU = "Выберите лечебно профилактическое учреждение";
+    private static final String RESPONSE_TEXT_LPU_TYPE = "Выберите тип лечебно профилактического учреждения";
 
     private final GorzdravService gorzdravService;
     private final KeyboardFactory keyboardFactory;
-    private final TrackingLpuHandler trackingLpuHandler;
+    private final TrackingLpuTypeHandler trackingLpuTypeHandler;
 
     @Override
     public VkResponse processMessage(Message message, UserState userState) {
@@ -29,15 +31,15 @@ public class TrackingDistrictHandler implements VkUpdateMessageHandler {
                 .findFirst().orElseThrow();
         userState.getContext().add(district);
 
-        var lpuName = gorzdravService.getLPUs(district).stream()
-                .map(LPU::lpuShortName)
-                .toList();
-        var keyboard = keyboardFactory.createReplyKeyboard(lpuName);
+        var lpuTypes = gorzdravService.getLPUs(district).stream()
+                .map(LPU::lpuType)
+                .collect(Collectors.toSet());
+        var keyboard = keyboardFactory.createReplyKeyboard(lpuTypes);
 
-        userState.setHandler(trackingLpuHandler);
+        userState.setHandler(trackingLpuTypeHandler);
         return VkResponse.builder()
                 .keyboard(keyboard)
-                .message(RESPONSE_TEXT_LPU)
+                .message(RESPONSE_TEXT_LPU_TYPE)
                 .build();
     }
 }

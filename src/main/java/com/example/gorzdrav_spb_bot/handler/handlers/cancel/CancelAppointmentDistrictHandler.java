@@ -15,11 +15,11 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 public class CancelAppointmentDistrictHandler implements VkUpdateMessageHandler {
 
-    private static final String RESPONSE_TEXT_LPU = "Выберите лечебно профилактическое учреждение";
+    private static final String RESPONSE_TEXT_LPU_TYPE = "Выберите тип лечебно профилактического учреждения";
 
     private final GorzdravService gorzdravService;
     private final KeyboardFactory keyboardFactory;
-    private final CancelAppointmentLpuHandler cancelAppointmentLpuHandler;
+    private final CancelAppointmentLpuTypeHandler cancelAppointmentLpuTypeHandler;
 
     @Override
     public VkResponse processMessage(Message message, UserState userState) {
@@ -34,9 +34,9 @@ public class CancelAppointmentDistrictHandler implements VkUpdateMessageHandler 
                 .toList();
         var keyboard = keyboardFactory.createReplyKeyboard(lpuName);
 
-        userState.setHandler(cancelAppointmentLpuHandler);
+        userState.setHandler(cancelAppointmentLpuTypeHandler);
         return VkResponse.builder()
-                .message(RESPONSE_TEXT_LPU)
+                .message(RESPONSE_TEXT_LPU_TYPE)
                 .keyboard(keyboard)
                 .build();
     }
