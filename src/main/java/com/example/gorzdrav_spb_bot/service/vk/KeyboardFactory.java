@@ -10,23 +10,26 @@ import java.util.List;
 @Service
 public class KeyboardFactory {
 
-    // Лимит ВК: максимум 5 кнопок в одном ряду
-    private static final int MAX_COLUMNS = 5;
-    // Лимит ВК: максимум 10 рядов
-    private static final int MAX_ROWS = 10;
-
     public Keyboard createReplyKeyboard(List<String> allCommands) {
         List<List<KeyboardButton>> buttons = new ArrayList<>();
         List<KeyboardButton> currentRow = new ArrayList<>();
 
+        // Лимит ВК: максимум 10 рядов
+        int maxRows = 10;
+        // Лимит ВК: максимум 5 кнопок в одном ряду, но если кнопок не много, засунем по одной в ряд
+        int maxColumns = 5;
+        if (allCommands.size() <= maxColumns) {
+            maxColumns = 1;
+        }
+
         for (String cmd : allCommands) {
             // Если мы уже создали 10 рядов, прекращаем, чтобы не получить ошибку от API
-            if (buttons.size() >= MAX_ROWS) {
+            if (buttons.size() >= maxRows) {
                 break;
             }
 
             // Если текущий ряд заполнен, добавляем его в общую сетку и создаем новый
-            if (currentRow.size() == MAX_COLUMNS) {
+            if (currentRow.size() == maxColumns) {
                 buttons.add(currentRow);
                 currentRow = new ArrayList<>();
             }
@@ -40,7 +43,7 @@ public class KeyboardFactory {
         }
 
         // Не забываем добавить последний ряд, если он не пустой
-        if (!currentRow.isEmpty() && buttons.size() < MAX_ROWS) {
+        if (!currentRow.isEmpty() && buttons.size() < maxRows) {
             buttons.add(currentRow);
         }
 
@@ -50,7 +53,7 @@ public class KeyboardFactory {
                 .setInline(false); // Для обычных кнопок под полем ввода
     }
 
-    public String truncateLabel(String text) {
+    private String truncateLabel(String text) {
         if (text == null) return "";
         return text.length() <= 40 ? text : text.substring(0, 37) + "...";
     }
