@@ -5,12 +5,13 @@ import com.vk.api.sdk.objects.messages.KeyboardButton;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @Service
 public class KeyboardFactory {
 
-    public Keyboard createReplyKeyboard(List<String> allCommands) {
+    public Keyboard createReplyKeyboard(Collection<String> allCommands) {
         List<List<KeyboardButton>> buttons = new ArrayList<>();
         List<KeyboardButton> currentRow = new ArrayList<>();
 
