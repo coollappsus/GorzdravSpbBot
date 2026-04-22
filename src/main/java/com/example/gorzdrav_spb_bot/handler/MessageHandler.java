@@ -7,15 +7,17 @@ import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.client.actors.GroupActor;
 import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
-import com.vk.api.sdk.objects.callback.MessageNew;
 import com.vk.api.sdk.objects.messages.Message;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
+
+import static com.example.gorzdrav_spb_bot.config.Const.CURRENT_GROUP_ID;
 
 @Service
 @Slf4j
@@ -33,6 +35,14 @@ public class MessageHandler {
     public void handle(Message message) {
         String text = message.getText();
         Long peerId = message.getPeerId();
+
+        if (Objects.equals(peerId, CURRENT_GROUP_ID)) {
+            //TODO: Иногда, не всегда, ловим интересную штуку. Сервис нашел номерок и асинхронно записал к врачу,
+            // оповестил об этом пользователя(!) от имени бота, а вк подхватывает это сообщение, как новое для бота
+            // и пытается его бесконечно обработать. Надо наблюдать за этим поведением. Пока заколотим костылем.
+            log.info("The message was received from the group itself " + peerId);
+            return;
+        }
 
         log.info("Новое сообщение от {}: {}", peerId, text);
         sendMessage(peerId, processUpdate(message));

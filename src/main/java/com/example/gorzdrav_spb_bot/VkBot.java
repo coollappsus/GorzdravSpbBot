@@ -33,6 +33,7 @@ public class VkBot {
         log.info("Запуск VK Long Poll...");
         try {
             Integer ts = vk.messages().getLongPollServer(actor).execute().getTs();
+            int errorCounter = 0;
             while (!Thread.currentThread().isInterrupted()) {
                 try {
                     MessagesGetLongPollHistoryQuery historyQuery = vk.messages().getLongPollHistory(actor).ts(ts);
@@ -42,11 +43,17 @@ public class VkBot {
                         messages.forEach(messageHandler::handle);
                     }
                     ts = vk.messages().getLongPollServer(actor).execute().getTs();
+                    errorCounter = 0;
                 } catch (Exception e) {
                     sendMessageError(e);
                     log.error("Ошибка при получении сообщений, штатная ситуация, пробуем снова...", e);
+                    Thread.sleep(10000);
+
+                    if (errorCounter++ >= 10) {
+                        Thread.currentThread().interrupt();
+                    }
                 }
-                Thread.sleep(500);
+                Thread.sleep(1000);
             }
         } catch (Exception e) {
             log.error("Критическая ошибка Long Poll", e);
