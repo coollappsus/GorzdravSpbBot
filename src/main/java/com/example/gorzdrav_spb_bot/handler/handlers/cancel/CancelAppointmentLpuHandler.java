@@ -12,7 +12,7 @@ import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.FullAppointment;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.LPU;
 import com.example.gorzdrav_spb_bot.service.vk.KeyboardFactory;
 import com.example.gorzdrav_spb_bot.service.vk.VkAsyncMessageSender;
-import com.vk.api.sdk.objects.messages.Message;
+import api.longpoll.bots.model.objects.basic.Message;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
@@ -60,7 +60,7 @@ public class CancelAppointmentLpuHandler implements VkUpdateMessageHandler {
 
         if (appointments == null || appointments.isEmpty()) {
             userState.setHandler(startHandler);
-            vkAsyncMessageSender.sendMessageToUser(message.getFromId(), NOT_FOUND_APPOINTMENT_RESPONSE_TEXT);
+            vkAsyncMessageSender.sendMessageToUser(Long.valueOf(message.getFromId()), NOT_FOUND_APPOINTMENT_RESPONSE_TEXT);
             return startHandler.processMessage(message, userState);
         }
 

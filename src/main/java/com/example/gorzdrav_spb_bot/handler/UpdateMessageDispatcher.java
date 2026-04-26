@@ -1,11 +1,11 @@
 package com.example.gorzdrav_spb_bot.handler;
 
+import api.longpoll.bots.model.objects.basic.Message;
 import com.example.gorzdrav_spb_bot.handler.dao.UserState;
 import com.example.gorzdrav_spb_bot.handler.dao.VkResponse;
 import com.example.gorzdrav_spb_bot.handler.handlers.StartHandler;
 import com.example.gorzdrav_spb_bot.handler.util.ContextUtil;
 import com.example.gorzdrav_spb_bot.service.vk.VkAsyncMessageSender;
-import com.vk.api.sdk.objects.messages.Message;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -31,7 +31,7 @@ public class UpdateMessageDispatcher {
             if (messageText.equals("/clear")) {
                 contextUtil.cleanAllContext(userState);
                 userState.setHandler(startHandler);
-                vkAsyncMessageSender.sendMessageToUser(message.getPeerId(), CLEAR_CONTEXT_RESPONSE);
+                vkAsyncMessageSender.sendMessageToUser(Long.valueOf(message.getPeerId()), CLEAR_CONTEXT_RESPONSE);
             }
         }
 

@@ -11,7 +11,7 @@ import com.example.gorzdrav_spb_bot.handler.handlers.tracking.TrackingDistrictHa
 import com.example.gorzdrav_spb_bot.service.gorzdrav.GorzdravService;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.District;
 import com.example.gorzdrav_spb_bot.service.vk.KeyboardFactory;
-import com.vk.api.sdk.objects.messages.Message;
+import api.longpoll.bots.model.objects.basic.Message;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 

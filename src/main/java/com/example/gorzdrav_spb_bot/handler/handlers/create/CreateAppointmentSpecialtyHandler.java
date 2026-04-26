@@ -9,7 +9,7 @@ import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.Doctor;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.LPU;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.Specialty;
 import com.example.gorzdrav_spb_bot.service.vk.KeyboardFactory;
-import com.vk.api.sdk.objects.messages.Message;
+import api.longpoll.bots.model.objects.basic.Message;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 

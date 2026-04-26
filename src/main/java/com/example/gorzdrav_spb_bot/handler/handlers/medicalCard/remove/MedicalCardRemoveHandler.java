@@ -6,7 +6,7 @@ import com.example.gorzdrav_spb_bot.handler.dao.VkResponse;
 import com.example.gorzdrav_spb_bot.handler.handlers.StartHandler;
 import com.example.gorzdrav_spb_bot.model.MedicalCard;
 import com.example.gorzdrav_spb_bot.repository.MedicalCardRepository;
-import com.vk.api.sdk.objects.messages.Message;
+import api.longpoll.bots.model.objects.basic.Message;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 

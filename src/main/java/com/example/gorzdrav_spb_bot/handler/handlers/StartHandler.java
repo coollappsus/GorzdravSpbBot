@@ -8,9 +8,7 @@ import com.example.gorzdrav_spb_bot.repository.MedicalCardRepository;
 import com.example.gorzdrav_spb_bot.repository.UserRepository;
 import com.example.gorzdrav_spb_bot.service.vk.KeyboardFactory;
 import com.example.gorzdrav_spb_bot.service.vk.VkUsersService;
-import com.vk.api.sdk.exceptions.ApiException;
-import com.vk.api.sdk.exceptions.ClientException;
-import com.vk.api.sdk.objects.messages.Message;
+import api.longpoll.bots.model.objects.basic.Message;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -36,11 +34,11 @@ public class StartHandler implements VkUpdateMessageHandler {
         performNextState(userState);
         User user;
         String userName = getUserName(message);
-        if (!userRepository.existsByUserId(message.getFromId())) {
+        if (!userRepository.existsByUserId(Long.valueOf(message.getFromId()))) {
              user = User.builder()
                     .userName(userName)
-                    .userId(message.getFromId())
-                    .chatId(message.getPeerId())
+                    .userId(Long.valueOf(message.getFromId()))
+                    .chatId(Long.valueOf(message.getPeerId()))
                     .build();
             userRepository.save(user);
             var keyboard = keyboardFactory.createReplyKeyboard(List.of(ADD.getText()));

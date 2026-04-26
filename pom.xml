@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.example</groupId>
     <artifactId>gorzdrav_spb_bot</artifactId>
-    <version>2.0.0</version>
+    <version>2.0.1</version>
     <name>gorzdrav_spb_bot</name>
     <description>gorzdrav_spb_bot</description>
     <properties>
@@ -29,9 +29,9 @@
             <version>1.0.16</version>
         </dependency>
         <dependency>
-            <groupId>com.vk.api</groupId>
-            <artifactId>core</artifactId>
-            <version>1.0.0-public</version>
+            <groupId>io.github.bivashy</groupId>
+            <artifactId>java-vk-bots-longpoll-api</artifactId>
+            <version>4.1.8</version>
         </dependency>
 
         <dependency>

@@ -1,5 +1,6 @@
 package com.example.gorzdrav_spb_bot.handler;
 
+import api.longpoll.bots.model.objects.basic.Message;
 import com.example.gorzdrav_spb_bot.handler.dao.UserState;
 import com.example.gorzdrav_spb_bot.handler.dao.VkResponse;
 import com.example.gorzdrav_spb_bot.handler.handlers.StartHandler;
@@ -7,7 +8,6 @@ import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.client.actors.GroupActor;
 import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
-import com.vk.api.sdk.objects.messages.Message;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -34,7 +34,7 @@ public class MessageHandler {
 
     public void handle(Message message) {
         String text = message.getText();
-        Long peerId = message.getPeerId();
+        Long peerId = Long.valueOf(message.getPeerId());
 
         if (Objects.equals(peerId, CURRENT_GROUP_ID)) {
             //TODO: Иногда, не всегда, ловим интересную штуку. Сервис нашел номерок и асинхронно записал к врачу,
@@ -67,7 +67,7 @@ public class MessageHandler {
     }
 
     private VkResponse processUpdate(Message message) {
-        Long userId = message.getFromId();
+        Long userId = Long.valueOf(message.getFromId());
         UserState state = states.stream().filter(s -> s.getUserId().equals(userId)).findFirst()
                 .orElse(null);
         if (state == null) {

@@ -13,7 +13,7 @@ import com.example.gorzdrav_spb_bot.repository.TaskRepository;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.Doctor;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.LPU;
 import com.example.gorzdrav_spb_bot.service.vk.VkAsyncMessageSender;
-import com.vk.api.sdk.objects.messages.Message;
+import api.longpoll.bots.model.objects.basic.Message;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
@@ -63,7 +63,7 @@ public class TrackingTimePreferenceHandler implements VkUpdateMessageHandler {
                 .build()).getId();
         userState.setHandler(startHandler);
         contextUtil.cleanAllContext(userState);
-        vkAsyncMessageSender.sendMessageToUser(message.getFromId(), RESPONSE_TEXT_FINISH_TRACKING.formatted(taskId));
+        vkAsyncMessageSender.sendMessageToUser(Long.valueOf(message.getFromId()), RESPONSE_TEXT_FINISH_TRACKING.formatted(taskId));
 
         return startHandler.processMessage(message, userState);
     }

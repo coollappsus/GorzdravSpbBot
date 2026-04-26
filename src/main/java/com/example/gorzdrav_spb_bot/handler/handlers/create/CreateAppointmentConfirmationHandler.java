@@ -10,7 +10,7 @@ import com.example.gorzdrav_spb_bot.service.gorzdrav.GorzdravService;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.Appointment;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.LPU;
 import com.example.gorzdrav_spb_bot.service.vk.VkAsyncMessageSender;
-import com.vk.api.sdk.objects.messages.Message;
+import api.longpoll.bots.model.objects.basic.Message;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
@@ -43,7 +43,7 @@ public class CreateAppointmentConfirmationHandler implements VkUpdateMessageHand
             MedicalCard medicalCard = contextUtil.getContextObject(userState, MedicalCard.class);
             gorzdravService.createAppointment(appointment, lpu, medicalCard.getPatientId());
 
-            vkAsyncMessageSender.sendMessageToUser(message.getPeerId(), RESPONSE_TEXT_FINISH_APPOINTMENT);
+            vkAsyncMessageSender.sendMessageToUser(Long.valueOf(message.getPeerId()), RESPONSE_TEXT_FINISH_APPOINTMENT);
         }
         userState.setHandler(startHandler);
         contextUtil.cleanAllContext(userState);

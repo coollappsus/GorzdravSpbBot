@@ -10,7 +10,7 @@ import com.example.gorzdrav_spb_bot.model.MedicalCard;
 import com.example.gorzdrav_spb_bot.model.User;
 import com.example.gorzdrav_spb_bot.repository.MedicalCardRepository;
 import com.example.gorzdrav_spb_bot.service.vk.KeyboardFactory;
-import com.vk.api.sdk.objects.messages.Message;
+import api.longpoll.bots.model.objects.basic.Message;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
