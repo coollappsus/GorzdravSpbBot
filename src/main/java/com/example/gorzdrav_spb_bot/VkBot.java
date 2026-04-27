@@ -7,6 +7,7 @@ import com.example.gorzdrav_spb_bot.handler.MessageHandler;
 import com.example.gorzdrav_spb_bot.service.vk.VkAsyncMessageSender;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import static com.example.gorzdrav_spb_bot.config.Const.ADMIN_ID;
@@ -14,6 +15,9 @@ import static com.example.gorzdrav_spb_bot.config.Const.ADMIN_ID;
 @Slf4j
 @Component
 public class VkBot extends LongPollBot {
+
+    @Value("${vk.access-token}")
+    private String accessToken;
 
     private final MessageHandler messageHandler;
     private final VkAsyncMessageSender vkAsyncMessageSender;
@@ -40,6 +44,6 @@ public class VkBot extends LongPollBot {
 
     @Override
     public String getAccessToken() {
-        return System.getProperty("vk.access-token");
+        return accessToken;
     }
 }
