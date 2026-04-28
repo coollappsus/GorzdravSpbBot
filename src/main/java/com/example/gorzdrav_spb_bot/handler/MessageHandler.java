@@ -7,6 +7,7 @@ import com.example.gorzdrav_spb_bot.handler.handlers.StartHandler;
 import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.client.actors.GroupActor;
 import com.vk.api.sdk.exceptions.ApiException;
+import com.vk.api.sdk.exceptions.ApiExtendedException;
 import com.vk.api.sdk.exceptions.ClientException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -59,7 +60,12 @@ public class MessageHandler {
         } catch (Exception e) {
             log.error("Error while processing update", e);
             try {
-                sendUserErrorMessage(peerId, e.getMessage());
+                String errorMessage = e.getMessage();
+                if (errorMessage.contains("keyboard contains too much buttons")) {
+                    int countRow = response.getKeyboard().getButtons().size();
+                    errorMessage += " count row in keyboard: " + countRow;
+                }
+                sendUserErrorMessage(peerId, errorMessage);
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
             }
