@@ -16,7 +16,7 @@ public class KeyboardFactory {
         List<KeyboardButton> currentRow = new ArrayList<>();
 
         // Лимит ВК: максимум 10 рядов
-        int maxRows = 10;
+        int maxRows = 8;
         // Лимит ВК: максимум 5 кнопок в одном ряду, но если кнопок не много, засунем по одной в ряд
         int maxColumns = 5;
         if (allCommands.size() <= maxColumns) {
