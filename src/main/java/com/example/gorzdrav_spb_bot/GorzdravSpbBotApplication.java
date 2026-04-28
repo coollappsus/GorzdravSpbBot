@@ -25,10 +25,9 @@ public class GorzdravSpbBotApplication {
             } catch (VkApiException e) {
                 // Тот самый таймаут или любая другая сетевая ошибка упадет сюда
                 log.error("Сетевая ошибка VK (возможно таймаут). Пробую переподключиться через 10 секунд...", e);
-
                 try {
                     // Обязательно делаем паузу, чтобы не долбить сервер в случае жесткого сбоя
-                    Thread.sleep(10000);
+                    Thread.sleep(100000);
                 } catch (InterruptedException ie) {
                     Thread.currentThread().interrupt();
                     break; // Если поток прерван, выходим
