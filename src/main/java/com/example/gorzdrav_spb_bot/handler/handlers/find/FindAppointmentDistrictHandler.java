@@ -11,6 +11,8 @@ import api.longpoll.bots.model.objects.basic.Message;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.stream.Collectors;
+
 @Component
 @AllArgsConstructor
 public class FindAppointmentDistrictHandler implements VkUpdateMessageHandler {
@@ -29,10 +31,10 @@ public class FindAppointmentDistrictHandler implements VkUpdateMessageHandler {
                 .findFirst().orElseThrow();
         userState.getContext().add(district);
 
-        var lpuName = gorzdravService.getLPUs(district).stream()
-                .map(LPU::lpuShortName)
-                .toList();
-        var keyboard = keyboardFactory.createReplyKeyboard(lpuName);
+        var lpuTypes = gorzdravService.getLPUs(district).stream()
+                .map(LPU::lpuType)
+                .collect(Collectors.toSet());
+        var keyboard = keyboardFactory.createReplyKeyboard(lpuTypes);
 
         userState.setHandler(findApointmentLpuTypeHandler);
         return VkResponse.builder()
