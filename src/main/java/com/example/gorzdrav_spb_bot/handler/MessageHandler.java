@@ -7,10 +7,10 @@ import com.example.gorzdrav_spb_bot.handler.handlers.StartHandler;
 import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.client.actors.GroupActor;
 import com.vk.api.sdk.exceptions.ApiException;
-import com.vk.api.sdk.exceptions.ApiExtendedException;
 import com.vk.api.sdk.exceptions.ClientException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
@@ -33,6 +33,7 @@ public class MessageHandler {
     private final StartHandler startHandler;
     private final Random random = new Random();
 
+    @Async("botExecutor")
     public void handle(Message message) {
         String text = message.getText();
         Long peerId = Long.valueOf(message.getPeerId());
