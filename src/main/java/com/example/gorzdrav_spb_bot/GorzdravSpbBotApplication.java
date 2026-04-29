@@ -15,7 +15,7 @@ public class GorzdravSpbBotApplication {
     public static void main(String[] args) throws VkApiException {
         ConfigurableApplicationContext context = SpringApplication.run(GorzdravSpbBotApplication.class, args);
         VkBot app = context.getBean(VkBot.class);
-        app.initialize();
+//        app.initialize();
 
         // Запускаем бесконечный цикл "живучести"
         while (true) {
