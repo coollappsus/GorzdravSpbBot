@@ -30,7 +30,7 @@ public class GorzdravSpbBotApplication {
                 try {
                     if (e.getMessage().contains("Rate limit reached")) {
                         countDaysSleep++;
-                        log.error("Поймали лимит запросов к серверу. Придется ждать долго. Спим столько суток - " + countDaysSleep);
+                        log.error("Поймали лимит запросов к серверу. Придется ждать долго. Спим столько суток - {}", countDaysSleep);
                         TimeUnit.DAYS.sleep(countDaysSleep);
                     } else {
                         log.error("Сетевая ошибка VK (возможно таймаут). Пробую переподключиться через 3 минуты...", e);
