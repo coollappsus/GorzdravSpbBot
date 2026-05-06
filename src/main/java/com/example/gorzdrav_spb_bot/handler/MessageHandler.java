@@ -47,7 +47,17 @@ public class MessageHandler {
         }
 
         log.info("Новое сообщение от {}: {}", peerId, text);
-        sendMessage(peerId, processUpdate(message));
+        VkResponse response = null;
+        try {
+            response = processUpdate(message);
+        } catch (Exception e) {
+            try {
+                sendUserErrorMessage(peerId, e.getMessage());
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+        sendMessage(peerId, response);
     }
 
     private void sendMessage(Long peerId, VkResponse response) {
@@ -62,6 +72,7 @@ public class MessageHandler {
             log.error("Error while processing update", e);
             try {
                 String errorMessage = e.getMessage();
+                //TODO: Убрать, когда поймем, что пора
                 if (errorMessage.contains("keyboard contains too much buttons")) {
                     int countRow = response.getKeyboard().getButtons().size();
                     errorMessage += " count row in keyboard: " + countRow;
