@@ -1,6 +1,7 @@
 package com.example.gorzdrav_spb_bot.handler.handlers.create;
 
 import com.example.gorzdrav_spb_bot.handler.VkUpdateMessageHandler;
+import com.example.gorzdrav_spb_bot.handler.dao.SelectedAppointmentDay;
 import com.example.gorzdrav_spb_bot.handler.dao.UserState;
 import com.example.gorzdrav_spb_bot.handler.dao.VkResponse;
 import com.example.gorzdrav_spb_bot.handler.util.ContextUtil;
@@ -15,7 +16,11 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 
 import static com.example.gorzdrav_spb_bot.handler.UserConstResponseText.CONFIRMATION;
 import static com.example.gorzdrav_spb_bot.handler.UserConstResponseText.TO_MAIN;
@@ -25,6 +30,7 @@ import static com.example.gorzdrav_spb_bot.handler.UserConstResponseText.TO_MAIN
 public class CreateAppointmentChooseAppHandler implements VkUpdateMessageHandler {
 
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("d MMMM yyyy, HH:mm");
+    public static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm", new Locale("ru"));
     private static final String RESPONSE_TEXT_CONFIRMATION = """
             Подтвердите выбранные данные.
             🚑Лечебно-профилактическое учреждение - %s
@@ -43,17 +49,30 @@ public class CreateAppointmentChooseAppHandler implements VkUpdateMessageHandler
         LPU lpu = contextUtil.getContextObject(userState, LPU.class);
         Doctor doctor = contextUtil.getContextObject(userState, Doctor.class);
 
-        String appointmentId = message.getText().substring(0, message.getText().indexOf(". "));
+        SelectedAppointmentDay selectedDay = contextUtil.getContextObject(userState, SelectedAppointmentDay.class);
+        String selectedTimeRange = message.getText();
         Appointment appointment = gorzdravService.getAppointments(lpu, doctor).stream()
-                .filter(a -> a.id().equals(appointmentId))
+                .filter(a -> {
+                    LocalDate appointmentDate = a.visitStart().toInstant()
+                            .atZone(ZoneId.systemDefault()).toLocalDate();
+                    if (!appointmentDate.equals(selectedDay.date())) return false;
+                    String time = TIME_FORMATTER.format(a.visitStart().toInstant().atZone(ZoneId.systemDefault()))
+                            + " - " +
+                            TIME_FORMATTER.format(a.visitEnd().toInstant().atZone(ZoneId.systemDefault()));
+
+                    return time.equals(selectedTimeRange);
+                })
                 .findFirst()
-                .orElseThrow();
+                .orElseThrow(() -> new RuntimeException("Запись на " + selectedDay.formattedDay() + " не найдена"));
         userState.getContext().add(appointment);
         MedicalCard medicalCard = contextUtil.getContextObject(userState, MedicalCard.class);
 
-        String response = RESPONSE_TEXT_CONFIRMATION.formatted(lpu.lpuShortName(), doctor.name(),
+        String response = RESPONSE_TEXT_CONFIRMATION.formatted(
+                lpu.lpuShortName(),
+                doctor.name(),
                 DATE_FORMAT.format(appointment.visitStart()) + " - " + DATE_FORMAT.format(appointment.visitEnd()),
-                medicalCard.getLastName() + " " + medicalCard.getFirstName() + " " + medicalCard.getMiddleName());
+                medicalCard.getLastName() + " " + medicalCard.getFirstName() + " " + medicalCard.getMiddleName()
+        );
         var keyboard = keyboardFactory.createReplyKeyboard(List.of(TO_MAIN.getText(), CONFIRMATION.getText()));
         userState.setHandler(createAppointmentConfirmationHandler);
         return VkResponse.builder()

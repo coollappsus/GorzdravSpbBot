@@ -1,31 +1,32 @@
 package com.example.gorzdrav_spb_bot.handler.handlers.create;
 
+import api.longpoll.bots.model.objects.basic.Message;
 import com.example.gorzdrav_spb_bot.handler.VkUpdateMessageHandler;
 import com.example.gorzdrav_spb_bot.handler.dao.UserState;
 import com.example.gorzdrav_spb_bot.handler.dao.VkResponse;
 import com.example.gorzdrav_spb_bot.handler.util.ContextUtil;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.GorzdravService;
-import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.Appointment;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.Doctor;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.LPU;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.Specialty;
 import com.example.gorzdrav_spb_bot.service.vk.KeyboardFactory;
-import api.longpoll.bots.model.objects.basic.Message;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.text.SimpleDateFormat;
-import java.util.Comparator;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 @Component
 @AllArgsConstructor
 public class CreateAppointmentDoctorHandler implements VkUpdateMessageHandler {
 
-    private static final String RESPONSE_TEXT_APPOINTMENT = "Выберите время для записи";
+    private static final String RESPONSE_TEXT_APPOINTMENT = "Выберите день для записи. Перечислены только доступные дни.";
+    public static final DateTimeFormatter dayMonthFormatter = DateTimeFormatter.ofPattern("d MMMM", new Locale("ru"));
 
     private final GorzdravService gorzdravService;
     private final KeyboardFactory keyboardFactory;
-    private final CreateAppointmentChooseAppHandler createAppointmentChooseAppHandler;
+    private final CreateAppointmentDayHandler createAppointmentDayHandler;
     private final ContextUtil contextUtil;
 
     @Override
@@ -37,15 +38,18 @@ public class CreateAppointmentDoctorHandler implements VkUpdateMessageHandler {
                 .findFirst()
                 .orElseThrow();
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("d MMMM yyyy, HH:mm");
-        var visitString = gorzdravService.getAppointments(lpu, doctor).stream()
-                .sorted(Comparator.comparing(Appointment::visitStart))
-                .map(a -> a.id() + ". " + dateFormat.format(a.visitStart()) + " - " + dateFormat.format(a.visitEnd()))
+        var visitDaysString = gorzdravService.getAppointments(lpu, doctor).stream()
+                .map(a -> a.visitStart().toInstant()
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate())
+                .distinct()
+                .sorted()
+                .map(dayMonthFormatter::format)
                 .toList();
 
         userState.getContext().add(doctor);
-        var keyboard = keyboardFactory.createReplyKeyboard(visitString);
-        userState.setHandler(createAppointmentChooseAppHandler);
+        var keyboard = keyboardFactory.createReplyKeyboard(visitDaysString);
+        userState.setHandler(createAppointmentDayHandler);
 
         return VkResponse.builder()
                 .keyboard(keyboard)
