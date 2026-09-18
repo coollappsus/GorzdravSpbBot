@@ -1,22 +1,27 @@
 package com.example.gorzdrav_spb_bot.service.gorzdrav.api;
 
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.*;
-import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Objects;
 
-@AllArgsConstructor
+@Service
 public class GorzdravClient {
 
     private final RestTemplate restTemplate;
     @Value("${gorzdrav.api.url}")
     private String baseUrl;
+
+    public GorzdravClient(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
+
 
     public DistrictsResponse getDistricts() {
         String url = baseUrl + "/_api/api/v2/shared/districts";

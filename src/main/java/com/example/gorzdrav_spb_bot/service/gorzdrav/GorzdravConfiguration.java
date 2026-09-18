@@ -1,12 +1,11 @@
 package com.example.gorzdrav_spb_bot.service.gorzdrav;
 
-import com.example.gorzdrav_spb_bot.service.gorzdrav.api.GorzdravClient;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.concurrent.Executor;
 
@@ -15,8 +14,8 @@ import java.util.concurrent.Executor;
 public class GorzdravConfiguration {
 
     @Bean
-    public GorzdravClient gorzdravClient(RestTemplateBuilder restTemplateBuilder) {
-        return new GorzdravClient(restTemplateBuilder.build());
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
     }
 
     @Bean
