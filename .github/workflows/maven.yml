@@ -10,9 +10,9 @@ name: Java CI/CD with Maven
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "main-vk" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "main-vk"]
 
 jobs:
   build:
@@ -71,4 +71,4 @@ jobs:
           docker volume prune --force
 
       - name: Build & deploy via docker-compose
-        run: docker compose up -d --build --pull always --force-recreate --remove-orphans
+        run: docker compose up -d --build --pull always --force-recreate --remove-orphans app

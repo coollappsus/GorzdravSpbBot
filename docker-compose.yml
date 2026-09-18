@@ -11,25 +11,35 @@ services:
     environment:
       - JAVA_TOOL_OPTIONS=-Duser.timezone=Europe/Moscow
       - TZ=Europe/Moscow
-    # Монтируем сгенерённый файл свойств внутрь контейнера
     volumes:
       - ./application.properties:/config/application.properties:ro
-
     depends_on:
-      - dummy
-
+      - postgresql  # Бот стартует только ПОСЛЕ запуска базы данных
     networks:
-      shared:
+      - bot_internal_net
+      - shared_db_net
+
+  postgresql:
+    image: postgres:14-alpine
+    container_name: gorzdrav_postgres
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - gorzdrav_pg_data:/var/lib/postgresql/data  # Данные хранятся тут
+    ports:
+      - "127.0.0.1:5432:5432"
+    networks:
+      bot_internal_net:
+      shared_db_net:
         aliases:
-          - db    # на общей сети «shared_db_net» имя «db» резолвится на этот контейнер
-
-  dummy:
-    image: busybox
-    command: ["sh", "-c", "while true; do sleep 3600; done"]
-    networks:
-      - shared
+          - db  # Для сторонних проектов эта БД будет доступна по хосту "db"
 
 networks:
-  shared:
+  bot_internal_net:  # Внутренняя сеть для общения бота и его БД
+  shared_db_net:     # Общая внешняя сеть для связи со сторонними проектами
     external: true
     name: shared_db_net
+
+volumes:
+  gorzdrav_pg_data:  # Объявляем волюм для хранения данных
