@@ -2,6 +2,7 @@ package com.example.gorzdrav_spb_bot.service.gorzdrav.api;
 
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.*;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -14,9 +15,11 @@ import java.util.Objects;
 public class GorzdravClient {
 
     private final RestTemplate restTemplate;
+    @Value("${gorzdrav.api.url}")
+    private String baseUrl;
 
     public DistrictsResponse getDistricts() {
-        String url = "https://gorzdrav.spb.ru/_api/api/v2/shared/districts";
+        String url = baseUrl + "/_api/api/v2/shared/districts";
 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.set("Content-type", "application/json");
@@ -30,7 +33,7 @@ public class GorzdravClient {
     }
 
     public LPUsResponse getLPUs(District district) {
-        String url = "https://gorzdrav.spb.ru/_api/api/v2/shared/district/%d/lpus".formatted(district.id());
+        String url = baseUrl + "/_api/api/v2/shared/district/%d/lpus".formatted(district.id());
 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.set("Content-type", "application/json");
@@ -44,7 +47,7 @@ public class GorzdravClient {
     }
 
     public LPUsResponse getAllLPUs() {
-        String url = "https://gorzdrav.spb.ru/_api/api/v2/shared/lpus";
+        String url = baseUrl + "/_api/api/v2/shared/lpus";
 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.set("Content-type", "application/json");
@@ -58,7 +61,7 @@ public class GorzdravClient {
     }
 
     public SpecialtiesResponse getSpecialties(LPU lpu) {
-        String url = "https://gorzdrav.spb.ru/_api/api/v2/schedule/lpu/%s/specialties".formatted(lpu.id());
+        String url = baseUrl + "/_api/api/v2/schedule/lpu/%s/specialties".formatted(lpu.id());
 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.set("Content-type", "application/json");
@@ -72,7 +75,7 @@ public class GorzdravClient {
     }
 
     public DoctorsResponse getDoctors(LPU lpu, Specialty specialty) {
-        String url = "https://gorzdrav.spb.ru/_api/api/v2/schedule/lpu/%s/speciality/%s/doctors"
+        String url = baseUrl + "/_api/api/v2/schedule/lpu/%s/speciality/%s/doctors"
                 .formatted(lpu.id(), specialty.id());
 
         HttpHeaders httpHeaders = new HttpHeaders();
@@ -86,7 +89,7 @@ public class GorzdravClient {
     }
 
     public AppointmentsResponse getAppointments(String lpuId, String doctorId) {
-        String url = "https://gorzdrav.spb.ru/_api/api/v2/schedule/lpu/%s/doctor/%s/appointments"
+        String url = baseUrl + "/_api/api/v2/schedule/lpu/%s/doctor/%s/appointments"
                 .formatted(lpuId, doctorId);
 
         HttpHeaders httpHeaders = new HttpHeaders();
@@ -100,7 +103,7 @@ public class GorzdravClient {
     }
 
     public PatientResponse findPatient(PatientRequest patientRequest) {
-        String url = ("https://gorzdrav.spb.ru/_api/api/v2/patient/search?" +
+        String url = (baseUrl + "/_api/api/v2/patient/search?" +
                 "lpuId=%s&firstName=%s&middleName=%s&lastName=%s&birthdate=%s")
                 .formatted(patientRequest.lpuId(), patientRequest.firstName(), patientRequest.middleName(),
                         patientRequest.lastName(), patientRequest.birthdate());
@@ -115,7 +118,7 @@ public class GorzdravClient {
     }
 
     public DefaultResponse createAppointment(CreateAppointmentRequest request) {
-        String url = "https://gorzdrav.spb.ru/_api/api/v2/appointment/create";
+        String url = baseUrl + "/_api/api/v2/appointment/create";
 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.set("Content-type", "application/json");
@@ -128,7 +131,7 @@ public class GorzdravClient {
     }
 
     public FindAppointmentResponse findAppointment(LPU lpu, String patientId) {
-        String url = "https://gorzdrav.spb.ru/_api/api/v2/appointments?lpuId=%s&patientId=%s"
+        String url = baseUrl + "/_api/api/v2/appointments?lpuId=%s&patientId=%s"
                 .formatted(lpu.id(), patientId);
 
         HttpHeaders httpHeaders = new HttpHeaders();
@@ -142,7 +145,7 @@ public class GorzdravClient {
     }
 
     public DefaultResponse cancelAppointment(CancelAppointmentRequest request) {
-        String url = "https://gorzdrav.spb.ru/_api/api/v2/appointment/cancel";
+        String url = baseUrl + "/_api/api/v2/appointment/cancel";
 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.set("Content-type", "application/json");

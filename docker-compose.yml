@@ -11,6 +11,7 @@ services:
     environment:
       - JAVA_TOOL_OPTIONS=-Duser.timezone=Europe/Moscow
       - TZ=Europe/Moscow
+      - GORZDRAV_API_URL=${GORZDRAV_API_URL}
     volumes:
       - ./application.properties:/config/application.properties:ro
     depends_on:
