@@ -25,6 +25,10 @@ services:
     restart: unless-stopped
     env_file:
       - .env
+    environment:
+      - POSTGRES_DB=${DB_NAME:-gorzdrav_db}
+      - POSTGRES_USER=${DB_USERNAME}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
     volumes:
       - gorzdrav_pg_data:/var/lib/postgresql/data  # Данные хранятся тут
     ports:
