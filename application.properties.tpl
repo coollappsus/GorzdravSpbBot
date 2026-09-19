@@ -1,6 +1,6 @@
 spring.application.name=gorzdrav_spb_bot
 token.bot=${BOT_TOKEN}
-gorzdrav.api.url=${GORZDRAV_API_URL:https://gorzdrav.spb.ru}
+gorzdrav.api.url=${GORZDRAV_API_URL}
 
 
 spring.datasource.url=${DB_URL}

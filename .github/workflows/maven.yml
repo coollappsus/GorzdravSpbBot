@@ -43,6 +43,7 @@ jobs:
       DB_URL: ${{ secrets.DB_URL }}
       DB_USERNAME: ${{ secrets.DB_USERNAME }}
       DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      GORZDRAV_API_URL: ${{ secrets.GORZDRAV_API_URL }}
 
     steps:
       - name: Checkout repository
@@ -56,6 +57,7 @@ jobs:
           DB_URL=${DB_URL}
           DB_USERNAME=${DB_USERNAME}
           DB_PASSWORD=${DB_PASSWORD}
+          GORZDRAV_API_URL=${GORZDRAV_API_URL}
           EOF
 
       # Рендерим application.properties.tpl из шаблона
