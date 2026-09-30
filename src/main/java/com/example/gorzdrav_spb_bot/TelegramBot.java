@@ -28,13 +28,10 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     public TelegramBot(
             @Value("${token.bot}") String botToken,
-            DefaultBotOptions defaultBotOptions,
             TelegramUpdateMessageDispatcher telegramUpdateMessageHandler,
             StartHandler startHandler
     ) {
-        super(defaultBotOptions, botToken);
-        // ВРЕМЕННЫЙ ЛОГ ДЛЯ ПРОВЕРКИ:
-        System.out.println("====== БОТ СТАРТУЕТ С URL: " + defaultBotOptions.getBaseUrl() + " ======");
+        super(new DefaultBotOptions(), botToken);
         this.telegramUpdateMessageHandler = telegramUpdateMessageHandler;
         this.startHandler = startHandler;
     }
