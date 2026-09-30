@@ -1,0 +1,36 @@
+services:
+  postgresql-local:
+    image: postgres:14-alpine
+    container_name: gorzdrav_postgres_local
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=gorzdrav_db_local
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=local_password
+      - TZ=Europe/Moscow
+    ports:
+      # Пробрасываем порт на ваш Mac, чтобы Spring Boot мог подключиться к localhost:5432
+      - "5433:5432"
+    volumes:
+      - gorzdrav_pg_data_local:/var/lib/postgresql/data
+    networks:
+      - bot_local_net
+
+  # Заглушка (Мок) для API Горздрава (понадобится на следующем шаге)
+  gorzdrav-mock:
+    image: mockoon/cli:latest
+    container_name: gorzdrav_mock
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./mockoon-config.json:/data/mockoon-config.json
+    command: ["-d", "/data/mockoon-config.json", "-p", "8080", "--watch"]
+    networks:
+      - bot_local_net
+
+networks:
+  bot_local_net:
+
+volumes:
+  gorzdrav_pg_data_local:

@@ -12,3 +12,4 @@ spring.jpa.hibernate.ddl-auto=update
 spring.jpa.properties.hibernate.jdbc.time_zone=Europe/Moscow
 
 spring.jackson.time-zone=Europe/Moscow
+spring.jackson.deserialization.adjust-dates-to-context-time-zone=false
