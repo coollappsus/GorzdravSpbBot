@@ -1,5 +1,5 @@
 # Используем официальный образ Maven
-FROM maven:3.9-amazoncorretto-21 as build
+FROM maven:3.9-eclipse-temurin-17 as build
 
 # Качаем файл pom.xml и весь java-код
 COPY pom.xml .
@@ -8,7 +8,7 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 # Используем официальный образ OpenJDK как базовый
-FROM amazoncorretto:21
+FROM eclipse-temurin:17-jre
 
 # Копируем jar-ку, которая сгенерировалась выше
 COPY --from=build /target/*.jar app.jar
