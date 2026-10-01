@@ -25,7 +25,7 @@ public class CancelAppointmentLpuHandler implements TelegramUpdateMessageHandler
 
     private static final String RESPONSE_TEXT_HEADER = "📝Выберите запись для отмены";
     private static final String NOT_FOUND_APPOINTMENT_RESPONSE_TEXT = "📝Записей не найдено!";
-    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("d MMMM yyyy, HH:mm");
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("d MMMM yyyy, HH:mm");
 
     private final GorzdravService gorzdravService;
     private final KeyboardFactory keyboardFactory;
@@ -67,7 +67,7 @@ public class CancelAppointmentLpuHandler implements TelegramUpdateMessageHandler
 
         var visitStartStringList = appointments.stream()
                 .sorted(Comparator.comparing(FullAppointment::visitStart))
-                .map(a -> a.appointmentId() + ". " + dateFormat.format(a.visitStart()) )
+                .map(a -> a.appointmentId() + ". " + DATE_FORMAT.format(a.visitStart()) )
                 .toList();
         var keyboard = keyboardFactory.createReplyKeyboard(visitStartStringList);
         userState.setHandler(cancelAppointmentAppHandler);
