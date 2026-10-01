@@ -10,6 +10,7 @@ public record FullAppointment(
         String patientId,
         String lpuShortName,
         Doctor doctorRendingConsultation,
+        Specialty specialityRendingConsultation,
         @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Europe/Moscow", locale = "ru")
         Date visitStart) {
 }

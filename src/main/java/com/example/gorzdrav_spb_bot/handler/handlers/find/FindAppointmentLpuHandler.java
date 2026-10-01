@@ -79,6 +79,8 @@ public class FindAppointmentLpuHandler implements TelegramUpdateMessageHandler {
                     .append(appointments.get(i).lpuShortName()).append("\n")
                     .append("\uD83D\uDC69\u200D⚕\uFE0FДоктор - ")
                     .append(appointments.get(i).doctorRendingConsultation().name()).append("\n")
+                    .append("🩺Специальность - ")
+                    .append(appointments.get(i).specialityRendingConsultation().name()).append("\n")
                     .append("⏱Время - ")
                     .append(dateString).append("\n\n");
         }
