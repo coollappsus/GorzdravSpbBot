@@ -1,7 +1,7 @@
 package com.example.gorzdrav_spb_bot.handler.handlers.medicalCard.add;
 
 import com.example.gorzdrav_spb_bot.handler.TelegramUpdateMessageHandler;
-import com.example.gorzdrav_spb_bot.handler.dao.UserState;
+import com.example.gorzdrav_spb_bot.handler.cache.dao.UserState;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.GorzdravService;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.District;
 import com.example.gorzdrav_spb_bot.service.telegram.KeyboardFactory;
@@ -27,14 +27,14 @@ public class AddMedCardDiscrictHandler implements TelegramUpdateMessageHandler {
         District district = gorzdravService.getDistricts().stream()
                 .filter(d -> d.name().equals(districtName))
                 .findFirst().orElseThrow();
-        userState.getContext().add(district);
+        userState.setDistrict(district);
 
         var lpuName = gorzdravService.getLPUs(district).stream()
                 .map(lpu -> lpu.lpuShortName() + " по адресу " + lpu.address())
                 .toList();
         var keyboard = keyboardFactory.createReplyKeyboard(lpuName);
 
-        userState.setHandler(addMedCardLpuHandler);
+        userState.setHandlerName("AddMedCardLpuHandler");
         return SendMessage.builder()
                 .chatId(message.getChatId())
                 .replyMarkup(keyboard)

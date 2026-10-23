@@ -7,6 +7,10 @@ spring.datasource.url=${DB_URL}
 spring.datasource.username=${DB_USERNAME}
 spring.datasource.password=${DB_PASSWORD}
 
+spring.data.redis.host=${SPRING_DATA_REDIS_HOST}
+spring.data.redis.port=${SPRING_DATA_REDIS_PORT}
+spring.data.redis.timeout=2000
+
 spring.jpa.generate-ddl=true
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.properties.hibernate.jdbc.time_zone=Europe/Moscow

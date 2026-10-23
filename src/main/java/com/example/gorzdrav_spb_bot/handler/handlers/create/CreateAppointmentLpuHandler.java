@@ -1,8 +1,7 @@
 package com.example.gorzdrav_spb_bot.handler.handlers.create;
 
 import com.example.gorzdrav_spb_bot.handler.TelegramUpdateMessageHandler;
-import com.example.gorzdrav_spb_bot.handler.dao.UserState;
-import com.example.gorzdrav_spb_bot.handler.util.ContextUtil;
+import com.example.gorzdrav_spb_bot.handler.cache.dao.UserState;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.GorzdravService;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.District;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.LPU;
@@ -22,12 +21,10 @@ public class CreateAppointmentLpuHandler implements TelegramUpdateMessageHandler
 
     private final GorzdravService gorzdravService;
     private final KeyboardFactory keyboardFactory;
-    private final CreateAppointmentSpecialtyHandler createAppointmentSpecialtyHandler;
-    private final ContextUtil contextUtil;
 
     @Override
     public BotApiMethod<?> processMessage(Message message, UserState userState) {
-        District district = contextUtil.getContextObject(userState, District.class);
+        District district = userState.getDistrict();
         String lpuName = message.getText().substring(0, message.getText().indexOf(" по адресу"));
         LPU lpu = gorzdravService.getLPUs(district).stream()
                 .filter(l -> l.lpuShortName().equals(lpuName))
@@ -38,8 +35,8 @@ public class CreateAppointmentLpuHandler implements TelegramUpdateMessageHandler
                 .map(Specialty::name)
                 .toList();
         var keyboard = keyboardFactory.createReplyKeyboard(specialtiesName);
-        userState.setHandler(createAppointmentSpecialtyHandler);
-        userState.getContext().add(lpu);
+        userState.setHandlerName("CreateAppointmentSpecialtyHandler");
+        userState.setLpu(lpu);
         return SendMessage.builder()
                 .chatId(message.getChatId())
                 .replyMarkup(keyboard)

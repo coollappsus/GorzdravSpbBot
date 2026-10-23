@@ -1,8 +1,7 @@
 package com.example.gorzdrav_spb_bot.handler.handlers.medicalCard.add;
 
 import com.example.gorzdrav_spb_bot.handler.TelegramUpdateMessageHandler;
-import com.example.gorzdrav_spb_bot.handler.dao.UserState;
-import com.example.gorzdrav_spb_bot.model.MedicalCard;
+import com.example.gorzdrav_spb_bot.handler.cache.dao.UserState;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
@@ -13,19 +12,12 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 @AllArgsConstructor
 public class AddMedCardFirstNameHandler implements TelegramUpdateMessageHandler {
 
-    private static final String RESPONSE_TEXT_LAST_NAME = "Введите фамилию пациента";
-
-    private final AddMedCardLastNameHandler addMedCardLastNameHandler;
+    private static final String RESPONSE_TEXT_LAST_NAME = "Введите отчество пациента";
 
     @Override
     public BotApiMethod<?> processMessage(Message message, UserState userState) {
-        userState.getContext().stream()
-                .filter(mc -> mc instanceof MedicalCard)
-                .map(mc -> (MedicalCard) mc)
-                .peek(mc -> mc.setFirstName(message.getText()))
-                .findFirst()
-                .orElseThrow();
-        userState.setHandler(addMedCardLastNameHandler);
+        userState.getMedicalCardContext().setFirstName(message.getText());
+        userState.setHandlerName("AddMedCardMiddleNameHandler");
         return SendMessage.builder()
                 .chatId(message.getChatId())
                 .text(RESPONSE_TEXT_LAST_NAME)

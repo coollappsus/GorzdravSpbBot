@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.example</groupId>
     <artifactId>gorzdrav_spb_bot</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.3</version>
     <name>gorzdrav_spb_bot</name>
     <description>gorzdrav_spb_bot</description>
     <url/>
@@ -53,6 +53,11 @@
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
 
         <dependency>

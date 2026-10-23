@@ -1,10 +1,7 @@
 package com.example.gorzdrav_spb_bot.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 
@@ -31,5 +28,6 @@ public class User {
     private Long chatId;
 
     @OneToMany(mappedBy = "owner")
+    @ToString.Exclude
     private List<MedicalCard> medicalCards;
 }

@@ -1,7 +1,7 @@
 package com.example.gorzdrav_spb_bot.handler.handlers.tracking;
 
 import com.example.gorzdrav_spb_bot.handler.TelegramUpdateMessageHandler;
-import com.example.gorzdrav_spb_bot.handler.dao.UserState;
+import com.example.gorzdrav_spb_bot.handler.cache.dao.UserState;
 import com.example.gorzdrav_spb_bot.model.TimePreference;
 import com.example.gorzdrav_spb_bot.service.telegram.KeyboardFactory;
 import lombok.AllArgsConstructor;
@@ -29,20 +29,19 @@ public class TrackingDayPreferenceHandler implements TelegramUpdateMessageHandle
             """;
 
     private final KeyboardFactory keyboardFactory;
-    private final TrackingTimePreferenceHandler trackingTimePreferenceHandler;
 
     @Override
     public BotApiMethod<?> processMessage(Message message, UserState userState) {
         if (!message.getText().equals("Не важно")) {
             Date date = stringToDate(message.getText());
-            userState.getContext().add(date);
+            userState.setPreferedDate(date);
         }
 
         List<String> preferenceTimeStrings = Arrays.stream(TimePreference.values())
                 .map(TimePreference::getAdditionalName)
                 .toList();
         var keyboard = keyboardFactory.createReplyKeyboard(preferenceTimeStrings);
-        userState.setHandler(trackingTimePreferenceHandler);
+        userState.setHandlerName("TrackingTimePreferenceHandler");
         return SendMessage.builder()
                 .chatId(message.getChatId())
                 .replyMarkup(keyboard)

@@ -9,14 +9,12 @@ services:
       - POSTGRES_PASSWORD=local_password
       - TZ=Europe/Moscow
     ports:
-      # Пробрасываем порт на ваш Mac, чтобы Spring Boot мог подключиться к localhost:5432
       - "5433:5432"
     volumes:
       - gorzdrav_pg_data_local:/var/lib/postgresql/data
     networks:
       - bot_local_net
 
-  # Заглушка (Мок) для API Горздрава (понадобится на следующем шаге)
   gorzdrav-mock:
     image: mockoon/cli:latest
     container_name: gorzdrav_mock
@@ -29,8 +27,21 @@ services:
     networks:
       - bot_local_net
 
+  redis:
+    image: redis:7-alpine
+    container_name: gorzdrav_redis
+    restart: unless-stopped
+    command: redis-server --port 6339 --dir /data
+    ports:
+      - "127.0.0.1:6339:6339"
+    volumes:
+      - gorzdrav_redis_data:/data # Чтобы кэш или сессии не стирались при перезапуске контейнера
+    networks:
+      - bot_local_net # Подключаем к той же внутренней сети, что и приложение
+
 networks:
   bot_local_net:
 
 volumes:
   gorzdrav_pg_data_local:
+  gorzdrav_redis_data:

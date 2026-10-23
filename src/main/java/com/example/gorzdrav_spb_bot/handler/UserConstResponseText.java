@@ -19,4 +19,13 @@ public enum UserConstResponseText {
     UserConstResponseText(String text) {
         this.text = text;
     }
+
+    public static UserConstResponseText fromText(String text) {
+        for (UserConstResponseText command : values()) {
+            if (command.text.equals(text)) {
+                return command;
+            }
+        }
+        throw new RuntimeException("Unknown message type: " + text);
+    }
 }

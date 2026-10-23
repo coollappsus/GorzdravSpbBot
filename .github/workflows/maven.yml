@@ -44,6 +44,8 @@ jobs:
       DB_USERNAME: ${{ secrets.DB_USERNAME }}
       DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
       GORZDRAV_API_URL: ${{ secrets.GORZDRAV_API_URL }}
+      SPRING_DATA_REDIS_HOST: ${{ secrets.SPRING_DATA_REDIS_HOST }}
+      SPRING_DATA_REDIS_PORT: ${{ secrets.SPRING_DATA_REDIS_PORT }}
 
     steps:
       - name: Checkout repository
@@ -58,6 +60,8 @@ jobs:
           DB_USERNAME=${DB_USERNAME}
           DB_PASSWORD=${DB_PASSWORD}
           GORZDRAV_API_URL=${GORZDRAV_API_URL}
+          SPRING_DATA_REDIS_HOST=${SPRING_DATA_REDIS_HOST}
+          SPRING_DATA_REDIS_PORT=${SPRING_DATA_REDIS_PORT}
           EOF
 
       # Рендерим application.properties.tpl из шаблона

@@ -1,8 +1,7 @@
 package com.example.gorzdrav_spb_bot.handler.handlers.create;
 
 import com.example.gorzdrav_spb_bot.handler.TelegramUpdateMessageHandler;
-import com.example.gorzdrav_spb_bot.handler.dao.UserState;
-import com.example.gorzdrav_spb_bot.handler.util.ContextUtil;
+import com.example.gorzdrav_spb_bot.handler.cache.dao.UserState;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.GorzdravService;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.Appointment;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.Doctor;
@@ -26,13 +25,11 @@ public class CreateAppointmentDoctorHandler implements TelegramUpdateMessageHand
 
     private final GorzdravService gorzdravService;
     private final KeyboardFactory keyboardFactory;
-    private final CreateAppointmentChooseAppHandler createAppointmentChooseAppHandler;
-    private final ContextUtil contextUtil;
 
     @Override
     public BotApiMethod<?> processMessage(Message message, UserState userState) {
-        LPU lpu = contextUtil.getContextObject(userState, LPU.class);
-        Specialty specialty = contextUtil.getContextObject(userState, Specialty.class);
+        LPU lpu = userState.getLpu();
+        Specialty specialty = userState.getSpecialty();
         Doctor doctor = gorzdravService.getDoctors(specialty, lpu).stream()
                 .filter(d -> message.getText().equals(d.name().trim()))
                 .findFirst()
@@ -44,9 +41,9 @@ public class CreateAppointmentDoctorHandler implements TelegramUpdateMessageHand
                 .map(a -> a.id() + ". " + dateFormat.format(a.visitStart()) + " - " + dateFormat.format(a.visitEnd()))
                 .toList();
 
-        userState.getContext().add(doctor);
+        userState.setDoctor(doctor);
         var keyboard = keyboardFactory.createReplyKeyboard(visitString);
-        userState.setHandler(createAppointmentChooseAppHandler);
+        userState.setHandlerName("CreateAppointmentChooseAppHandler");
         return SendMessage.builder()
                 .chatId(message.getChatId())
                 .replyMarkup(keyboard)

@@ -1,8 +1,7 @@
 package com.example.gorzdrav_spb_bot.handler.handlers.create;
 
 import com.example.gorzdrav_spb_bot.handler.TelegramUpdateMessageHandler;
-import com.example.gorzdrav_spb_bot.handler.dao.UserState;
-import com.example.gorzdrav_spb_bot.handler.util.ContextUtil;
+import com.example.gorzdrav_spb_bot.handler.cache.dao.UserState;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.GorzdravService;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.Doctor;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.LPU;
@@ -22,24 +21,22 @@ public class CreateAppointmentSpecialtyHandler implements TelegramUpdateMessageH
 
     private final GorzdravService gorzdravService;
     private final KeyboardFactory keyboardFactory;
-    private final CreateAppointmentDoctorHandler createAppointmentDoctorHandler;
-    private final ContextUtil contextUtil;
 
     @Override
     public BotApiMethod<?> processMessage(Message message, UserState userState) {
-        LPU lpu = contextUtil.getContextObject(userState, LPU.class);
+        LPU lpu = userState.getLpu();
         String specialtyName = message.getText();
         Specialty specialty = gorzdravService.getSpecialties(lpu).stream()
                 .filter(s -> s.name().equals(specialtyName))
                 .findFirst()
                 .orElseThrow();
-        userState.getContext().add(specialty);
+        userState.setSpecialty(specialty);
 
         var doctorsName = gorzdravService.getDoctors(specialty, lpu).stream()
                 .map(Doctor::name)
                 .toList();
         var keyboard = keyboardFactory.createReplyKeyboard(doctorsName);
-        userState.setHandler(createAppointmentDoctorHandler);
+        userState.setHandlerName("CreateAppointmentDoctorHandler");
         return SendMessage.builder()
                 .chatId(message.getChatId())
                 .replyMarkup(keyboard)

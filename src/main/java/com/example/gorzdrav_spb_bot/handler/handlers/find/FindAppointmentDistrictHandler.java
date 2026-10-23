@@ -1,7 +1,7 @@
 package com.example.gorzdrav_spb_bot.handler.handlers.find;
 
 import com.example.gorzdrav_spb_bot.handler.TelegramUpdateMessageHandler;
-import com.example.gorzdrav_spb_bot.handler.dao.UserState;
+import com.example.gorzdrav_spb_bot.handler.cache.dao.UserState;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.GorzdravService;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.District;
 import com.example.gorzdrav_spb_bot.service.telegram.KeyboardFactory;
@@ -19,7 +19,6 @@ public class FindAppointmentDistrictHandler implements TelegramUpdateMessageHand
 
     private final GorzdravService gorzdravService;
     private final KeyboardFactory keyboardFactory;
-    private final FindAppointmentLpuHandler findAppointmentLpuHandler;
 
     @Override
     public BotApiMethod<?> processMessage(Message message, UserState userState) {
@@ -27,14 +26,14 @@ public class FindAppointmentDistrictHandler implements TelegramUpdateMessageHand
         District district = gorzdravService.getDistricts().stream()
                 .filter(d -> d.name().equals(districtName))
                 .findFirst().orElseThrow();
-        userState.getContext().add(district);
+        userState.setDistrict(district);
 
         var lpuName = gorzdravService.getLPUs(district).stream()
                 .map(lpu -> lpu.lpuShortName() + " по адресу " + lpu.address())
                 .toList();
         var keyboard = keyboardFactory.createReplyKeyboard(lpuName);
 
-        userState.setHandler(findAppointmentLpuHandler);
+        userState.setHandlerName("FindAppointmentLpuHandler");
         return SendMessage.builder()
                 .chatId(message.getChatId())
                 .replyMarkup(keyboard)

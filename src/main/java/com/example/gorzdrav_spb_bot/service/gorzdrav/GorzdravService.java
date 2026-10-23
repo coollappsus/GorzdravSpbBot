@@ -1,6 +1,6 @@
 package com.example.gorzdrav_spb_bot.service.gorzdrav;
 
-import com.example.gorzdrav_spb_bot.model.MedicalCard;
+import com.example.gorzdrav_spb_bot.handler.cache.dao.MedicalCardContext;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.GorzdravClient;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.*;
 import lombok.AllArgsConstructor;
@@ -9,7 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -114,12 +113,12 @@ public class GorzdravService {
         }
     }
 
-    public String findPatient(LPU lpu, MedicalCard medicalCard) {
+    public String findPatient(LPU lpu, MedicalCardContext medicalCardContext) {
         var request = PatientRequest.builder()
-                .birthdate(dateToString(medicalCard.getBirthDate()))
-                .lastName(medicalCard.getLastName())
-                .firstName(medicalCard.getFirstName())
-                .middleName(medicalCard.getMiddleName())
+                .birthdate(dateToString(medicalCardContext.getBirthDate()))
+                .lastName(medicalCardContext.getLastName())
+                .firstName(medicalCardContext.getFirstName())
+                .middleName(medicalCardContext.getMiddleName())
                 .lpuId(Integer.parseInt(lpu.id()))
                 .build();
         var response = gorzdravClient.findPatient(request);

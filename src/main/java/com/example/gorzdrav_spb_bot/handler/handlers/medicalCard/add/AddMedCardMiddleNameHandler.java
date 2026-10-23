@@ -1,8 +1,7 @@
 package com.example.gorzdrav_spb_bot.handler.handlers.medicalCard.add;
 
 import com.example.gorzdrav_spb_bot.handler.TelegramUpdateMessageHandler;
-import com.example.gorzdrav_spb_bot.handler.dao.UserState;
-import com.example.gorzdrav_spb_bot.model.MedicalCard;
+import com.example.gorzdrav_spb_bot.handler.cache.dao.UserState;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
@@ -15,17 +14,10 @@ public class AddMedCardMiddleNameHandler implements TelegramUpdateMessageHandler
 
     private static final String RESPONSE_TEXT_BIRTH_DATE = "Введите дату рождения пациента в формате dd.mm.yyyy";
 
-    private final AddMedCardBirthDateHandler addMedCardBirthDateHandler;
-
     @Override
     public BotApiMethod<?> processMessage(Message message, UserState userState) {
-        userState.getContext().stream()
-                .filter(mc -> mc instanceof MedicalCard)
-                .map(mc -> (MedicalCard) mc)
-                .peek(mc -> mc.setMiddleName(message.getText()))
-                .findFirst()
-                .orElseThrow();
-        userState.setHandler(addMedCardBirthDateHandler);
+        userState.getMedicalCardContext().setMiddleName(message.getText());
+        userState.setHandlerName("AddMedCardBirthDateHandler");
         return SendMessage.builder()
                 .chatId(message.getChatId())
                 .text(RESPONSE_TEXT_BIRTH_DATE)

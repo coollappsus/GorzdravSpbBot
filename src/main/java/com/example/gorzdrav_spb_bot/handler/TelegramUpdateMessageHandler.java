@@ -1,6 +1,6 @@
 package com.example.gorzdrav_spb_bot.handler;
 
-import com.example.gorzdrav_spb_bot.handler.dao.UserState;
+import com.example.gorzdrav_spb_bot.handler.cache.dao.UserState;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.objects.Message;
 

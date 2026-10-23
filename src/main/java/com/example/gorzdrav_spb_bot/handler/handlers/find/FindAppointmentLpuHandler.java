@@ -1,16 +1,16 @@
 package com.example.gorzdrav_spb_bot.handler.handlers.find;
 
 import com.example.gorzdrav_spb_bot.handler.TelegramUpdateMessageHandler;
-import com.example.gorzdrav_spb_bot.handler.dao.UserState;
+import com.example.gorzdrav_spb_bot.handler.cache.dao.MedicalCardContext;
+import com.example.gorzdrav_spb_bot.handler.cache.dao.UserState;
+import com.example.gorzdrav_spb_bot.handler.cache.util.ContextUtil;
 import com.example.gorzdrav_spb_bot.handler.handlers.StartHandler;
-import com.example.gorzdrav_spb_bot.handler.util.ContextUtil;
-import com.example.gorzdrav_spb_bot.model.MedicalCard;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.GorzdravService;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.District;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.FullAppointment;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.LPU;
 import com.example.gorzdrav_spb_bot.service.telegram.TelegramAsyncMessageSender;
-import org.springframework.context.annotation.Lazy;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -19,6 +19,7 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 
 @Component
+@AllArgsConstructor
 public class FindAppointmentLpuHandler implements TelegramUpdateMessageHandler {
 
     private static final String RESPONSE_TEXT_HEADER = "📝Текущие записи:\n";
@@ -29,33 +30,19 @@ public class FindAppointmentLpuHandler implements TelegramUpdateMessageHandler {
     private final ContextUtil contextUtil;
     private final TelegramAsyncMessageSender telegramAsyncMessageSender;
 
-    public FindAppointmentLpuHandler(GorzdravService gorzdravService, @Lazy StartHandler startHandler,
-                                     ContextUtil contextUtil,
-                                     TelegramAsyncMessageSender telegramAsyncMessageSender) {
-        this.gorzdravService = gorzdravService;
-        this.startHandler = startHandler;
-        this.contextUtil = contextUtil;
-        this.telegramAsyncMessageSender = telegramAsyncMessageSender;
-    }
-
     @Override
     public BotApiMethod<?> processMessage(Message message, UserState userState) {
-        District district = contextUtil.getContextObject(userState, District.class);
+        District district = userState.getDistrict();
         String lpuName = message.getText().substring(0, message.getText().indexOf(" по адресу"));
         LPU lpu = gorzdravService.getLPUs(district).stream()
                 .filter(l -> l.lpuShortName().equals(lpuName))
                 .findFirst()
                 .orElseThrow();
-        userState.getContext().add(lpu);
+        userState.setLpu(lpu);
 
-        MedicalCard medicalCard = userState.getContext().stream()
-                .filter(mc -> mc instanceof MedicalCard)
-                .map(mc -> (MedicalCard) mc)
-                .findFirst()
-                .orElseThrow();
+        MedicalCardContext medicalCard = userState.getMedicalCardContext();
         var appointments = gorzdravService.getFullAppointments(lpu, medicalCard.getPatientId());
 
-        userState.setHandler(startHandler);
         contextUtil.cleanAllContext(userState);
 
         if (appointments == null || appointments.isEmpty()) {

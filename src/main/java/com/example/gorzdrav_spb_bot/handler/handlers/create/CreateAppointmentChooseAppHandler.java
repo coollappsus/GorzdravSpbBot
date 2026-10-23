@@ -1,9 +1,8 @@
 package com.example.gorzdrav_spb_bot.handler.handlers.create;
 
 import com.example.gorzdrav_spb_bot.handler.TelegramUpdateMessageHandler;
-import com.example.gorzdrav_spb_bot.handler.dao.UserState;
-import com.example.gorzdrav_spb_bot.handler.util.ContextUtil;
-import com.example.gorzdrav_spb_bot.model.MedicalCard;
+import com.example.gorzdrav_spb_bot.handler.cache.dao.MedicalCardContext;
+import com.example.gorzdrav_spb_bot.handler.cache.dao.UserState;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.GorzdravService;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.Appointment;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.Doctor;
@@ -36,27 +35,25 @@ public class CreateAppointmentChooseAppHandler implements TelegramUpdateMessageH
 
     private final GorzdravService gorzdravService;
     private final KeyboardFactory keyboardFactory;
-    private final CreateAppointmentConfirmationHandler createAppointmentConfirmationHandler;
-    private final ContextUtil contextUtil;
 
     @Override
     public BotApiMethod<?> processMessage(Message message, UserState userState) {
-        LPU lpu = contextUtil.getContextObject(userState, LPU.class);
-        Doctor doctor = contextUtil.getContextObject(userState, Doctor.class);
+        LPU lpu = userState.getLpu();
+        Doctor doctor = userState.getDoctor();
 
         String appointmentId = message.getText().substring(0, message.getText().indexOf(". "));
         Appointment appointment = gorzdravService.getAppointments(lpu, doctor).stream()
                 .filter(a -> a.id().equals(appointmentId))
                 .findFirst()
                 .orElseThrow();
-        userState.getContext().add(appointment);
-        MedicalCard medicalCard = contextUtil.getContextObject(userState, MedicalCard.class);
+        userState.setAppointment(appointment);
+        MedicalCardContext medicalCard = userState.getMedicalCardContext();
 
         String response = RESPONSE_TEXT_CONFIRMATION.formatted(lpu.lpuShortName(), doctor.name(),
                 DATE_FORMAT.format(appointment.visitStart()) + " - " + DATE_FORMAT.format(appointment.visitEnd()),
                 medicalCard.getLastName() + " " + medicalCard.getFirstName() + " " + medicalCard.getMiddleName());
         var keyboard = keyboardFactory.createReplyKeyboard(List.of(TO_MAIN.getText(), CONFIRMATION.getText()));
-        userState.setHandler(createAppointmentConfirmationHandler);
+        userState.setHandlerName("CreateAppointmentConfirmationHandler");
         return SendMessage.builder()
                 .chatId(message.getChatId())
                 .replyMarkup(keyboard)

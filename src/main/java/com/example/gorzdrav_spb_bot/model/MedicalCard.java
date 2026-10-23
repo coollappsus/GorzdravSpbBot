@@ -1,10 +1,7 @@
 package com.example.gorzdrav_spb_bot.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
@@ -24,11 +21,13 @@ public class MedicalCard {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @Fetch(value = FetchMode.JOIN)
+    @ToString.Exclude
+    @JoinColumn(name = "owner_id")
     private User owner;
 
     private String firstName;
     private String lastName;
-    private String MiddleName;
+    private String middleName;
 
     private Date birthDate;
 

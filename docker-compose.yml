@@ -40,6 +40,16 @@ services:
         aliases:
           - db  # Для сторонних проектов эта БД будет доступна по хосту "db"
 
+  redis:
+    image: redis:7-alpine
+    container_name: gorzdrav_redis
+    restart: unless-stopped
+    command: redis-server --port 6339 --dir /data
+    volumes:
+      - gorzdrav_redis_data:/data # Чтобы кэш или сессии не стирались при перезапуске контейнера
+    networks:
+      - bot_internal_net # Подключаем к той же внутренней сети, что и приложение
+
 networks:
   bot_internal_net:  # Внутренняя сеть для общения бота и его БД
   shared_db_net:     # Общая внешняя сеть для связи со сторонними проектами
@@ -48,3 +58,4 @@ networks:
 
 volumes:
   gorzdrav_pg_data:  # Объявляем волюм для хранения данных
+  gorzdrav_redis_data:

@@ -1,8 +1,7 @@
 package com.example.gorzdrav_spb_bot.handler.handlers.tracking;
 
 import com.example.gorzdrav_spb_bot.handler.TelegramUpdateMessageHandler;
-import com.example.gorzdrav_spb_bot.handler.dao.UserState;
-import com.example.gorzdrav_spb_bot.handler.util.ContextUtil;
+import com.example.gorzdrav_spb_bot.handler.cache.dao.UserState;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.GorzdravService;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.Doctor;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.LPU;
@@ -27,21 +26,19 @@ public class TrackingDoctorHandler implements TelegramUpdateMessageHandler {
 
     private final GorzdravService gorzdravService;
     private final KeyboardFactory keyboardFactory;
-    private final TrackingDayPreferenceHandler trackingDayPreferenceHandler;
-    private final ContextUtil contextUtil;
 
     @Override
     public BotApiMethod<?> processMessage(Message message, UserState userState) {
-        LPU lpu = contextUtil.getContextObject(userState, LPU.class);
-        Specialty specialty = contextUtil.getContextObject(userState, Specialty.class);
+        LPU lpu = userState.getLpu();
+        Specialty specialty = userState.getSpecialty();
         Doctor doctor = gorzdravService.getDoctors(specialty, lpu).stream()
                 .filter(d -> message.getText().equals(d.name().trim()))
                 .findFirst()
                 .orElseThrow();
-        userState.getContext().add(doctor);
+        userState.setDoctor(doctor);
 
         var keyboard = keyboardFactory.createReplyKeyboard(List.of("Не важно"));
-        userState.setHandler(trackingDayPreferenceHandler);
+        userState.setHandlerName("TrackingDayPreferenceHandler");
         return SendMessage.builder()
                 .chatId(message.getChatId())
                 .replyMarkup(keyboard)
