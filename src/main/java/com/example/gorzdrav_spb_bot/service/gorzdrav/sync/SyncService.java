@@ -8,11 +8,13 @@ import com.example.gorzdrav_spb_bot.service.gorzdrav.sync.dto.DoctorInfo;
 import com.example.gorzdrav_spb_bot.service.telegram.TelegramAsyncMessageSender;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service
 @Slf4j
@@ -25,9 +27,18 @@ public class SyncService {
 
     private final static int BATCH_SIZE = 500;
     private final static Long ADMIN_ID = 906044021L;
+    private final AtomicBoolean isSyncRunning = new AtomicBoolean(false);
 
+    @Async
     @Scheduled(cron = "0 0 23 * * *", zone = "Europe/Moscow")
     public void dailySync() {
+        if (!isSyncRunning.compareAndSet(false, true)) {
+            String msg = "Попытка запустить синхронизацию, пока предыдущая еще выполняется! Отмена.";
+            log.warn(msg);
+            telegramAsyncMessageSender.sendMessageToUser(ADMIN_ID, msg);
+            return;
+        }
+
         try {
             LocalDate today = LocalDate.now();
             log.info("=== SYNC START {} ===", today);
@@ -41,6 +52,7 @@ public class SyncService {
                     "Произошла ошибка при синхронизации БД Горздрава\n" + e.getMessage());
             throw new RuntimeException(e);
         } finally {
+            isSyncRunning.set(false);
             telegramAsyncMessageSender.sendMessageToUser(ADMIN_ID, "Синхронизация с БД Горздрав завершена");
         }
     }
