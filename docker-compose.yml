@@ -15,10 +15,7 @@ services:
     volumes:
       - ./application.properties:/config/application.properties:ro
     depends_on:
-      postgresql:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+      - postgresql  # Бот стартует только ПОСЛЕ запуска базы данных
     networks:
       - bot_internal_net
       - shared_db_net
@@ -42,11 +39,6 @@ services:
       shared_db_net:
         aliases:
           - db  # Для сторонних проектов эта БД будет доступна по хосту "db"
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_NAME:-gorzdrav_db}" ]
-      interval: 3s
-      timeout: 3s
-      retries: 5
 
   redis:
     image: redis:7-alpine
@@ -57,11 +49,6 @@ services:
       - gorzdrav_redis_data:/data # Чтобы кэш или сессии не стирались при перезапуске контейнера
     networks:
       - bot_internal_net # Подключаем к той же внутренней сети, что и приложение
-    healthcheck: # Без этого блока condition: service_healthy не отработает
-      test: [ "CMD", "redis-cli", "-p", "6339", "ping" ]
-      interval: 3s
-      timeout: 3s
-      retries: 5
 
 networks:
   bot_internal_net:  # Внутренняя сеть для общения бота и его БД
