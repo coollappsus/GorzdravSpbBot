@@ -16,6 +16,7 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Locale;
 
 import static com.example.gorzdrav_spb_bot.handler.UserConstResponseText.CONFIRMATION;
 import static com.example.gorzdrav_spb_bot.handler.UserConstResponseText.TO_MAIN;
@@ -24,7 +25,7 @@ import static com.example.gorzdrav_spb_bot.handler.UserConstResponseText.TO_MAIN
 @AllArgsConstructor
 public class CreateAppointmentChooseAppHandler implements TelegramUpdateMessageHandler {
 
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("d MMMM yyyy, HH:mm");
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("d MMMM yyyy, HH:mm", new Locale("ru"));
     private static final String RESPONSE_TEXT_CONFIRMATION = """
             Подтвердите выбранные данные.
             🚑Лечебно-профилактическое учреждение - %s

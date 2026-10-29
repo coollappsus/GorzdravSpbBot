@@ -17,6 +17,7 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Locale;
 
 @Component
 @AllArgsConstructor
@@ -57,7 +58,7 @@ public class FindAppointmentLpuHandler implements TelegramUpdateMessageHandler {
         StringBuilder sb = new StringBuilder();
         sb.append(RESPONSE_TEXT_HEADER);
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("d MMMM yyyy, HH:mm");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("d MMMM yyyy, HH:mm", new Locale("ru"));
         for (int i = 0; i < appointments.size(); i++) {
             String dateString = dateFormat.format(appointments.get(i).visitStart());
 

@@ -18,6 +18,7 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.text.SimpleDateFormat;
 import java.util.Comparator;
+import java.util.Locale;
 
 @Component
 @AllArgsConstructor
@@ -25,7 +26,7 @@ public class CancelAppointmentLpuHandler implements TelegramUpdateMessageHandler
 
     private static final String RESPONSE_TEXT_HEADER = "📝Выберите запись для отмены";
     private static final String NOT_FOUND_APPOINTMENT_RESPONSE_TEXT = "📝Записей не найдено!";
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("d MMMM yyyy, HH:mm");
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("d MMMM yyyy, HH:mm", new Locale("ru"));
 
     private final GorzdravService gorzdravService;
     private final KeyboardFactory keyboardFactory;

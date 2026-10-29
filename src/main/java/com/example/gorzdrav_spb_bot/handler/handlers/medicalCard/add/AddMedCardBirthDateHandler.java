@@ -14,6 +14,7 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 @Component
 @AllArgsConstructor
@@ -43,7 +44,7 @@ public class AddMedCardBirthDateHandler implements TelegramUpdateMessageHandler 
     }
 
     private Date stringToDate(String dateString) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy", new Locale("ru"));
         try {
             return dateFormat.parse(dateString);
         } catch (ParseException e) {

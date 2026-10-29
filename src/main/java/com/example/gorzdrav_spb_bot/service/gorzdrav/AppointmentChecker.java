@@ -16,10 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.time.ZoneId;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Component
@@ -46,8 +43,8 @@ public class AppointmentChecker {
             %s
             """;
 
-    private static final SimpleDateFormat FIRST_DATE_FORMAT = new SimpleDateFormat("d MMMM yyyy, HH:mm");
-    private static final SimpleDateFormat SECOND_DATE_FORMAT = new SimpleDateFormat("HH:mm");
+    private static final SimpleDateFormat FIRST_DATE_FORMAT = new SimpleDateFormat("d MMMM yyyy, HH:mm", new Locale("ru"));
+    private static final SimpleDateFormat SECOND_DATE_FORMAT = new SimpleDateFormat("HH:mm", new Locale("ru"));
     private static final ZoneId zone = ZoneId.of("Europe/Moscow");
 
     private final TaskRepository taskRepository;
