@@ -54,7 +54,7 @@ public class StartHandler implements TelegramUpdateMessageHandler {
                 .map(mc -> mc.getFirstName() + " " + mc.getLastName())
                 .toList());
         medicalCardsString.add(ADD.getText());
-        var keyboard = keyboardFactory.createReplyKeyboard(medicalCardsString);
+        var keyboard = keyboardFactory.createReplyKeyboard(medicalCardsString, false);
         performNextState(userState);
         return SendMessage.builder()
                     .chatId(message.getChatId())

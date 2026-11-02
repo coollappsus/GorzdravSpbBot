@@ -2,10 +2,14 @@ package com.example.gorzdrav_spb_bot.handler.cache.dao;
 
 import com.example.gorzdrav_spb_bot.model.TimePreference;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 @Data
 @Builder
@@ -23,4 +27,5 @@ public class UserState implements Serializable {
         Appointment appointment;
         Date preferedDate;
         TimePreference timePreference;
+        List<TaskContext> tasks;
 }

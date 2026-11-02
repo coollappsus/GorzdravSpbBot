@@ -14,8 +14,6 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
-import static com.example.gorzdrav_spb_bot.handler.UserConstResponseText.CONFIRMATION;
-
 @Component
 @AllArgsConstructor
 public class CreateAppointmentConfirmationHandler implements TelegramUpdateMessageHandler {
@@ -29,14 +27,12 @@ public class CreateAppointmentConfirmationHandler implements TelegramUpdateMessa
 
     @Override
     public BotApiMethod<?> processMessage(Message message, UserState userState) {
-        if (message.getText().equals(CONFIRMATION.getText())) {
-            LPU lpu = userState.getLpu();
-            Appointment appointment = userState.getAppointment();
-            MedicalCardContext medicalCard = userState.getMedicalCardContext();
-            gorzdravService.createAppointment(appointment, lpu, medicalCard.getPatientId());
+        LPU lpu = userState.getLpu();
+        Appointment appointment = userState.getAppointment();
+        MedicalCardContext medicalCard = userState.getMedicalCardContext();
+        gorzdravService.createAppointment(appointment, lpu, medicalCard.getPatientId());
 
-            telegramAsyncMessageSender.sendMessageToUser(message.getChatId(), RESPONSE_TEXT_FINISH_APPOINTMENT);
-        }
+        telegramAsyncMessageSender.sendMessageToUser(message.getChatId(), RESPONSE_TEXT_FINISH_APPOINTMENT);
         contextUtil.cleanAllContext(userState);
 
         return startHandler.processMessage(message, userState);

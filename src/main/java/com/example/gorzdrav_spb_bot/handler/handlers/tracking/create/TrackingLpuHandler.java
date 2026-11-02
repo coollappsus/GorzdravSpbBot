@@ -1,9 +1,9 @@
-package com.example.gorzdrav_spb_bot.handler.handlers.tracking;
+package com.example.gorzdrav_spb_bot.handler.handlers.tracking.create;
 
 import com.example.gorzdrav_spb_bot.handler.TelegramUpdateMessageHandler;
 import com.example.gorzdrav_spb_bot.handler.cache.dao.UserState;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.GorzdravService;
-import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.Doctor;
+import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.District;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.LPU;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.Specialty;
 import com.example.gorzdrav_spb_bot.service.telegram.KeyboardFactory;
@@ -15,32 +15,32 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 
 @Component
 @AllArgsConstructor
-public class TrackingSpecialtyHandler implements TelegramUpdateMessageHandler {
+public class TrackingLpuHandler implements TelegramUpdateMessageHandler {
 
-    private static final String RESPONSE_TEXT_DOCTOR = "Выберите доктора для записи";
+    private static final String RESPONSE_TEXT_SPECIALTY = "Выберите специалиста для записи";
 
     private final GorzdravService gorzdravService;
     private final KeyboardFactory keyboardFactory;
 
     @Override
     public BotApiMethod<?> processMessage(Message message, UserState userState) {
-        LPU lpu = userState.getLpu();
-        String specialtyName = message.getText();
-        Specialty specialty = gorzdravService.getSpecialties(lpu).stream()
-                .filter(s -> s.name().equals(specialtyName))
+        District district = userState.getDistrict();
+        String lpuName = message.getText().substring(0, message.getText().indexOf(" по адресу"));
+        LPU lpu = gorzdravService.getLPUs(district).stream()
+                .filter(l -> l.lpuShortName().equals(lpuName))
                 .findFirst()
                 .orElseThrow();
-        userState.setSpecialty(specialty);
 
-        var doctorsName = gorzdravService.getDoctors(specialty, lpu).stream()
-                .map(Doctor::name)
+        var specialtiesName = gorzdravService.getSpecialties(lpu).stream()
+                .map(Specialty::name)
                 .toList();
-        var keyboard = keyboardFactory.createReplyKeyboard(doctorsName);
-        userState.setHandlerName("TrackingDoctorHandler");
+        var keyboard = keyboardFactory.createReplyKeyboard(specialtiesName);
+        userState.setHandlerName("TrackingSpecialtyHandler");
+        userState.setLpu(lpu);
         return SendMessage.builder()
                 .chatId(message.getChatId())
                 .replyMarkup(keyboard)
-                .text(RESPONSE_TEXT_DOCTOR)
+                .text(RESPONSE_TEXT_SPECIALTY)
                 .build();
     }
 }

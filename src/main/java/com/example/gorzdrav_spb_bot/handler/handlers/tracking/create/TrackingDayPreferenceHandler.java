@@ -1,4 +1,4 @@
-package com.example.gorzdrav_spb_bot.handler.handlers.tracking;
+package com.example.gorzdrav_spb_bot.handler.handlers.tracking.create;
 
 import com.example.gorzdrav_spb_bot.handler.TelegramUpdateMessageHandler;
 import com.example.gorzdrav_spb_bot.handler.cache.dao.UserState;
@@ -15,6 +15,7 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 @Component
 @AllArgsConstructor
@@ -50,7 +51,7 @@ public class TrackingDayPreferenceHandler implements TelegramUpdateMessageHandle
     }
 
     private Date stringToDate(String dateString) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy", new Locale("ru"));
         try {
             return dateFormat.parse(dateString);
         } catch (ParseException e) {

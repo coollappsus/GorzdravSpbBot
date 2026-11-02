@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Locale;
 
 import static com.example.gorzdrav_spb_bot.handler.UserConstResponseText.CONFIRMATION;
-import static com.example.gorzdrav_spb_bot.handler.UserConstResponseText.TO_MAIN;
 
 @Component
 @AllArgsConstructor
@@ -53,7 +52,7 @@ public class CreateAppointmentChooseAppHandler implements TelegramUpdateMessageH
         String response = RESPONSE_TEXT_CONFIRMATION.formatted(lpu.lpuShortName(), doctor.name(),
                 DATE_FORMAT.format(appointment.visitStart()) + " - " + DATE_FORMAT.format(appointment.visitEnd()),
                 medicalCard.getLastName() + " " + medicalCard.getFirstName() + " " + medicalCard.getMiddleName());
-        var keyboard = keyboardFactory.createReplyKeyboard(List.of(TO_MAIN.getText(), CONFIRMATION.getText()));
+        var keyboard = keyboardFactory.createReplyKeyboard(List.of(CONFIRMATION.getText()));
         userState.setHandlerName("CreateAppointmentConfirmationHandler");
         return SendMessage.builder()
                 .chatId(message.getChatId())

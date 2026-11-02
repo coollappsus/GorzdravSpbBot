@@ -13,4 +13,6 @@ public interface TaskRepository extends CrudRepository<Task, Long> {
     List<Task> findByPreferenceDateBeforeAndCompleteStatusAndActiveStatus(Date preferenceDateBefore,
                                                                           Boolean completeStatus,
                                                                           Boolean activeStatus);
+
+    List<Task> findByOwnerIdAndActiveStatus(Long ownerId, boolean activeStatus);
 }

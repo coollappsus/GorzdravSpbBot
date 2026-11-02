@@ -1,4 +1,4 @@
-package com.example.gorzdrav_spb_bot.handler.handlers.tracking;
+package com.example.gorzdrav_spb_bot.handler.handlers.tracking.create;
 
 import com.example.gorzdrav_spb_bot.handler.TelegramUpdateMessageHandler;
 import com.example.gorzdrav_spb_bot.handler.cache.dao.UserState;
@@ -13,16 +13,11 @@ import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
-import java.util.List;
-
 @Component
 @AllArgsConstructor
-public class TrackingDoctorHandler implements TelegramUpdateMessageHandler {
+public class TrackingSpecialtyHandler implements TelegramUpdateMessageHandler {
 
-    private static final String RESPONSE_TEXT_APPOINTMENT = """
-            Введите дату в формате dd.mm.yyyy для отслеживания номерков.
-            Если необходимо попасть к врачу в любой день, выберите "Не важно".
-            """;
+    private static final String RESPONSE_TEXT_DOCTOR = "Выберите доктора для записи";
 
     private final GorzdravService gorzdravService;
     private final KeyboardFactory keyboardFactory;
@@ -30,19 +25,22 @@ public class TrackingDoctorHandler implements TelegramUpdateMessageHandler {
     @Override
     public BotApiMethod<?> processMessage(Message message, UserState userState) {
         LPU lpu = userState.getLpu();
-        Specialty specialty = userState.getSpecialty();
-        Doctor doctor = gorzdravService.getDoctors(specialty, lpu).stream()
-                .filter(d -> message.getText().equals(d.name().trim()))
+        String specialtyName = message.getText();
+        Specialty specialty = gorzdravService.getSpecialties(lpu).stream()
+                .filter(s -> s.name().equals(specialtyName))
                 .findFirst()
                 .orElseThrow();
-        userState.setDoctor(doctor);
+        userState.setSpecialty(specialty);
 
-        var keyboard = keyboardFactory.createReplyKeyboard(List.of("Не важно"));
-        userState.setHandlerName("TrackingDayPreferenceHandler");
+        var doctorsName = gorzdravService.getDoctors(specialty, lpu).stream()
+                .map(Doctor::name)
+                .toList();
+        var keyboard = keyboardFactory.createReplyKeyboard(doctorsName);
+        userState.setHandlerName("TrackingDoctorHandler");
         return SendMessage.builder()
                 .chatId(message.getChatId())
                 .replyMarkup(keyboard)
-                .text(RESPONSE_TEXT_APPOINTMENT)
+                .text(RESPONSE_TEXT_DOCTOR)
                 .build();
     }
 }

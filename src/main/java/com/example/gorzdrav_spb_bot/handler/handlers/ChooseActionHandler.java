@@ -4,6 +4,8 @@ import com.example.gorzdrav_spb_bot.handler.TelegramUpdateMessageHandler;
 import com.example.gorzdrav_spb_bot.handler.UserConstResponseText;
 import com.example.gorzdrav_spb_bot.handler.cache.dao.UserState;
 import com.example.gorzdrav_spb_bot.handler.handlers.medicalCard.remove.MedicalCardRemoveHandler;
+import com.example.gorzdrav_spb_bot.handler.handlers.tracking.cancel.TrackingCancelChooseHandler;
+import com.example.gorzdrav_spb_bot.handler.handlers.tracking.find.TrackingFindHandler;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.GorzdravService;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.District;
 import com.example.gorzdrav_spb_bot.service.telegram.KeyboardFactory;
@@ -22,25 +24,34 @@ public class ChooseActionHandler implements TelegramUpdateMessageHandler {
     private final GorzdravService gorzdravService;
     private final KeyboardFactory keyboardFactory;
     private final MedicalCardRemoveHandler medicalCardRemoveHandler;
+    private final TrackingFindHandler trackingFindHandler;
+    private final TrackingCancelChooseHandler trackingCancelChooseHandler;
 
     @Override
     public BotApiMethod<?> processMessage(Message message, UserState userState) {
+        String text = message.getText();
+        UserConstResponseText command = UserConstResponseText.fromText(text);
+        switch (command) {
+            case CREATE_APPOINTMENT -> userState.setHandlerName("CreateAppointmentDistrictHandler");
+            case CANCEL_APPOINTMENT -> userState.setHandlerName("CancelAppointmentDistrictHandler");
+            case FIND_APPOINTMENT -> userState.setHandlerName("FindAppointmentDistrictHandler");
+            case TRACKING_APPOINTMENT -> userState.setHandlerName("TrackingDistrictHandler");
+            case TRACKING_FIND -> {
+                return trackingFindHandler.processMessage(message, userState);
+            }
+            case TRACKING_CANCEL -> {
+                return trackingCancelChooseHandler.processMessage(message, userState);
+            }
+            case REMOVE -> {
+                return medicalCardRemoveHandler.processMessage(message, userState);
+            }
+            default -> throw new IllegalStateException("Неизвестная команда: " + text + ". Выберите команду из списка");
+        }
+
         var districtsName = gorzdravService.getDistricts().stream()
                 .map(District::name)
                 .toList();
         var keyboard = keyboardFactory.createReplyKeyboard(districtsName);
-
-        String text = message.getText();
-        UserConstResponseText command = UserConstResponseText.fromText(text);
-        switch (command) {
-            case CREATE_APPOINTMENT   -> userState.setHandlerName("CreateAppointmentDistrictHandler");
-            case CANCEL_APPOINTMENT   -> userState.setHandlerName("CancelAppointmentDistrictHandler");
-            case FIND_APPOINTMENT     -> userState.setHandlerName("FindAppointmentDistrictHandler");
-            case TRACKING_APPOINTMENT -> userState.setHandlerName("TrackingDistrictHandler");
-            case REMOVE               -> { return medicalCardRemoveHandler.processMessage(message, userState); }
-            default                   ->
-                    throw new IllegalStateException("Неизвестная команда: " + text + ". Выберите команду из списка");
-        }
 
         return SendMessage.builder()
                 .chatId(message.getChatId())

@@ -44,4 +44,8 @@ public class Task {
         this.completeStatus = true;
         this.activeStatus = false;
     }
+
+    public void doCancel() {
+        this.activeStatus = false;
+    }
 }

@@ -10,12 +10,16 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MedicalCardContext implements Serializable {
-        Long id;
-        UserContext owner;
-        String firstName;
-        String lastName;
-        String middleName;
-        Date birthDate;
-        int lpuId;
-        String patientId;
+    Long id;
+    UserContext owner;
+    String firstName;
+    String lastName;
+    String middleName;
+    Date birthDate;
+    int lpuId;
+    String patientId;
+
+    public String getFIO() {
+        return lastName + " " + firstName + " " + middleName;
+    }
 }

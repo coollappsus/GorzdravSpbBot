@@ -6,26 +6,37 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRem
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static com.example.gorzdrav_spb_bot.handler.UserConstResponseText.TO_MAIN;
 
 @Service
 public class KeyboardFactory {
 
     public ReplyKeyboardMarkup createReplyKeyboard(List<String> answers) {
+        return createReplyKeyboard(answers, true);
+    }
+
+    public ReplyKeyboardMarkup createReplyKeyboard(List<String> answers, boolean shouldIncludeToMain) {
         ReplyKeyboardMarkup markup = new ReplyKeyboardMarkup();
-        markup.setSelective(true); // Делает клавиатуру видимой только для текущего чата
+        markup.setSelective(true);
+        markup.setResizeKeyboard(true);
 
-        List<KeyboardRow> row = new ArrayList<>();
-        for (String answer : answers) {
-            KeyboardRow keyboardRow = new KeyboardRow();
-            KeyboardButton button = new KeyboardButton();
-            button.setText(answer);
-            keyboardRow.add(button);
-            row.add(keyboardRow);
+        List<KeyboardRow> rows = answers.stream()
+                .map(answer -> {
+                    KeyboardRow row = new KeyboardRow();
+                    row.add(new KeyboardButton(answer));
+                    return row;
+                })
+                .collect(Collectors.toList());
+
+        if (shouldIncludeToMain) {
+            KeyboardRow mainRow = new KeyboardRow();
+            mainRow.add(new KeyboardButton("🏠 " + TO_MAIN.getText()));
+            rows.add(mainRow);
         }
-        markup.setKeyboard(row);
-
+        markup.setKeyboard(rows);
         return markup;
     }
 

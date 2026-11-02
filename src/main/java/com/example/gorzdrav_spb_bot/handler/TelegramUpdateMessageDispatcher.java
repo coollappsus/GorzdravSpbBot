@@ -13,6 +13,8 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.List;
 
+import static com.example.gorzdrav_spb_bot.handler.UserConstResponseText.TO_MAIN;
+
 @Slf4j
 @Service
 @AllArgsConstructor
@@ -40,7 +42,7 @@ public class TelegramUpdateMessageDispatcher {
     private BotApiMethod<?> processMessage(Message message, UserState userState) {
         log.info("Начало обработки сообщения: message={}", message);
 
-        if (message.isCommand() && message.getText().equals("/clear")) {
+        if (message.getText().equals("/clear") || message.getText().endsWith(TO_MAIN.getText())) {
             userStateService.deleteByUserId(message.getChatId());
             userState = UserState.builder()
                     .userId(message.getChatId())

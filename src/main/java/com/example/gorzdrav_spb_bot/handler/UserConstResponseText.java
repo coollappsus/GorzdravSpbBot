@@ -9,6 +9,8 @@ public enum UserConstResponseText {
     FIND_APPOINTMENT("Посмотреть текущие записи"),
     CANCEL_APPOINTMENT("Отменить запись к врачу"),
     TRACKING_APPOINTMENT("Отслеживание и запись к врачу при появлении талончиков"),
+    TRACKING_FIND("Просмотр текущих отслеживаний к врачу"),
+    TRACKING_CANCEL("Отменить отслеживание"),
     REMOVE("Удалить карту"),
     TO_MAIN("В начало"),
     CONFIRMATION("Подтвердить");
