@@ -16,6 +16,7 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.text.SimpleDateFormat;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Locale;
 
 @Component
@@ -23,6 +24,7 @@ import java.util.Locale;
 public class CreateAppointmentDoctorHandler implements TelegramUpdateMessageHandler {
 
     private static final String RESPONSE_TEXT_APPOINTMENT = "Выберите время для записи";
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("d MMMM yyyy, HH:mm", new Locale("ru"));
 
     private final GorzdravService gorzdravService;
     private final KeyboardFactory keyboardFactory;
@@ -36,10 +38,16 @@ public class CreateAppointmentDoctorHandler implements TelegramUpdateMessageHand
                 .findFirst()
                 .orElseThrow();
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("d MMMM yyyy, HH:mm", new Locale("ru"));
-        var visitString = gorzdravService.getAppointments(lpu, doctor).stream()
+        List<Appointment> sortedAppointments = gorzdravService.getAppointments(lpu, doctor).stream()
                 .sorted(Comparator.comparing(Appointment::visitStart))
-                .map(a -> a.id() + ". " + dateFormat.format(a.visitStart()) + " - " + dateFormat.format(a.visitEnd()))
+                .toList();
+        List<String> orderedIds = sortedAppointments.stream()
+                .map(Appointment::id)
+                .toList();
+        userState.setAppointmentIds(orderedIds);
+
+        var visitString = sortedAppointments.stream()
+                .map(a -> DATE_FORMAT.format(a.visitStart()) + " - " + DATE_FORMAT.format(a.visitEnd()))
                 .toList();
 
         userState.setDoctor(doctor);

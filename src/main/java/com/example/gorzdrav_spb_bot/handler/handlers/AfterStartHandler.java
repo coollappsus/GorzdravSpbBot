@@ -1,7 +1,6 @@
 package com.example.gorzdrav_spb_bot.handler.handlers;
 
 import com.example.gorzdrav_spb_bot.handler.TelegramUpdateMessageHandler;
-import com.example.gorzdrav_spb_bot.handler.UserConstResponseText;
 import com.example.gorzdrav_spb_bot.handler.cache.dao.MedicalCardContext;
 import com.example.gorzdrav_spb_bot.handler.cache.dao.UserState;
 import com.example.gorzdrav_spb_bot.handler.cache.util.ContextUtil;
@@ -13,7 +12,6 @@ import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static com.example.gorzdrav_spb_bot.handler.UserConstResponseText.*;
@@ -53,8 +51,8 @@ public class AfterStartHandler implements TelegramUpdateMessageHandler {
         var medicalCard = medicalCardRepository.findByOwnerIdAndFirstNameAndLastName(user.id(), splitText[0], splitText[1]);
         contextUtil.addMedicalCard(userState, medicalCard);
 
-        var responses = List.of(CREATE_APPOINTMENT.getText(), FIND_APPOINTMENT.getText(), CANCEL_APPOINTMENT.getText(),
-                TRACKING_APPOINTMENT.getText(), TRACKING_FIND.getText(), REMOVE.getText());
+        var responses = List.of(CREATE_APPOINTMENT.getText(), FIND_APPOINTMENT.getText(), TRACKING_APPOINTMENT.getText(),
+                TRACKING_FIND.getText(), REMOVE.getText());
         var keyboard = keyboardFactory.createReplyKeyboard(responses);
         userState.setHandlerName("ChooseActionHandler");
 

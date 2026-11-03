@@ -5,7 +5,6 @@ import com.example.gorzdrav_spb_bot.handler.cache.dao.MedicalCardContext;
 import com.example.gorzdrav_spb_bot.handler.cache.dao.UserState;
 import com.example.gorzdrav_spb_bot.handler.handlers.StartHandler;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.GorzdravService;
-import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.District;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.FullAppointment;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.LPU;
 import com.example.gorzdrav_spb_bot.service.telegram.KeyboardFactory;
@@ -18,11 +17,12 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.text.SimpleDateFormat;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Locale;
 
 @Component
 @AllArgsConstructor
-public class CancelAppointmentLpuHandler implements TelegramUpdateMessageHandler {
+public class CancelAppointmentChooseHandler implements TelegramUpdateMessageHandler {
 
     private static final String RESPONSE_TEXT_HEADER = "📝Выберите запись для отмены";
     private static final String NOT_FOUND_APPOINTMENT_RESPONSE_TEXT = "📝Записей не найдено!";
@@ -35,14 +35,7 @@ public class CancelAppointmentLpuHandler implements TelegramUpdateMessageHandler
 
     @Override
     public BotApiMethod<?> processMessage(Message message, UserState userState) {
-        District district = userState.getDistrict();
-        String lpuName = message.getText().substring(0, message.getText().indexOf(" по адресу"));
-        LPU lpu = gorzdravService.getLPUs(district).stream()
-                .filter(l -> l.lpuShortName().equals(lpuName))
-                .findFirst()
-                .orElseThrow();
-        userState.setLpu(lpu);
-
+        LPU lpu = userState.getLpu();
         MedicalCardContext medicalCard = userState.getMedicalCardContext();
         var appointments = gorzdravService.getFullAppointments(lpu, medicalCard.getPatientId());
 
@@ -52,11 +45,19 @@ public class CancelAppointmentLpuHandler implements TelegramUpdateMessageHandler
             return startHandler.processMessage(message, userState);
         }
 
-        var visitStartStringList = appointments.stream()
+        List<FullAppointment> sortedAppointments = appointments.stream()
                 .sorted(Comparator.comparing(FullAppointment::visitStart))
-                .map(a -> a.appointmentId() + ". " + DATE_FORMAT.format(a.visitStart()) )
                 .toList();
-        var keyboard = keyboardFactory.createReplyKeyboard(visitStartStringList);
+        List<String> orderedIds = sortedAppointments.stream()
+                .map(FullAppointment::appointmentId)
+                .toList();
+        userState.setAppointmentIds(orderedIds);
+
+        var infoAboutAppointment = sortedAppointments.stream()
+                .map(a -> DATE_FORMAT.format(a.visitStart()) + " к врачу " + a.doctorRendingConsultation().name())
+                .toList();
+        var keyboard = keyboardFactory.createReplyKeyboard(infoAboutAppointment);
+
         userState.setHandlerName("CancelAppointmentAppHandler");
         return SendMessage.builder()
                 .chatId(message.getChatId())

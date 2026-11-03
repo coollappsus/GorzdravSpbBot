@@ -9,15 +9,19 @@ import com.example.gorzdrav_spb_bot.service.gorzdrav.GorzdravService;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.District;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.FullAppointment;
 import com.example.gorzdrav_spb_bot.service.gorzdrav.api.dto.LPU;
+import com.example.gorzdrav_spb_bot.service.telegram.KeyboardFactory;
 import com.example.gorzdrav_spb_bot.service.telegram.TelegramAsyncMessageSender;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
+
+import static com.example.gorzdrav_spb_bot.handler.UserConstResponseText.CANCEL_APPOINTMENT;
 
 @Component
 @AllArgsConstructor
@@ -30,6 +34,7 @@ public class FindAppointmentLpuHandler implements TelegramUpdateMessageHandler {
     private final StartHandler startHandler;
     private final ContextUtil contextUtil;
     private final TelegramAsyncMessageSender telegramAsyncMessageSender;
+    private final KeyboardFactory keyboardFactory;
 
     @Override
     public BotApiMethod<?> processMessage(Message message, UserState userState) {
@@ -44,14 +49,18 @@ public class FindAppointmentLpuHandler implements TelegramUpdateMessageHandler {
         MedicalCardContext medicalCard = userState.getMedicalCardContext();
         var appointments = gorzdravService.getFullAppointments(lpu, medicalCard.getPatientId());
 
-        contextUtil.cleanAllContext(userState);
-
-        if (appointments == null || appointments.isEmpty()) {
+        if (appointments.isEmpty()) {
+            contextUtil.cleanAllContext(userState);
             telegramAsyncMessageSender.sendMessageToUser(message.getChatId(), NOT_FOUND_APPOINTMENT_RESPONSE_TEXT);
-        } else {
-            telegramAsyncMessageSender.sendMessageToUser(message.getChatId(), creationResponseText(appointments));
+            return startHandler.processMessage(message, userState);
         }
-        return startHandler.processMessage(message, userState);
+        var keyboard = keyboardFactory.createReplyKeyboard(List.of(CANCEL_APPOINTMENT.getText()));
+        userState.setHandlerName("CancelAppointmentChooseHandler");
+        return SendMessage.builder()
+                .chatId(message.getChatId())
+                .replyMarkup(keyboard)
+                .text(creationResponseText(appointments))
+                .build();
     }
 
     private String creationResponseText(List<FullAppointment> appointments) {

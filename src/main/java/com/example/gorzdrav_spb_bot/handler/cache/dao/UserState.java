@@ -28,4 +28,5 @@ public class UserState implements Serializable {
         Date preferedDate;
         TimePreference timePreference;
         List<TaskContext> tasks;
+        List<String> appointmentIds;
 }
