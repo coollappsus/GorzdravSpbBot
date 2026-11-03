@@ -39,9 +39,9 @@ public class CancelAppointmentAppHandler implements TelegramUpdateMessageHandler
 
         List<String> buttonTexts = fullAppointments.stream()
                 .sorted(Comparator.comparing(FullAppointment::visitStart))
-                .map(a -> DATE_FORMAT.format(a.visitStart()) + " к врачу " + a.doctorRendingConsultation().name())
+                .map(a -> DATE_FORMAT.format(a.visitStart()) + " к врачу " + a.doctorRendingConsultation().name().trim())
                 .toList();
-        int index = buttonTexts.indexOf(message.getText());
+        int index = buttonTexts.indexOf(message.getText().trim());
 
         if (index == -1) {
             telegramAsyncMessageSender.sendMessageToUser(message.getChatId(), "Пожалуйста, выберите время на клавиатуре.");

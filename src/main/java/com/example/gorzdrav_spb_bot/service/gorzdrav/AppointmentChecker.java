@@ -9,15 +9,23 @@ import com.example.gorzdrav_spb_bot.service.telegram.TelegramAsyncMessageSender;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateUtils;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 @Component
 @AllArgsConstructor
@@ -51,47 +59,131 @@ public class AppointmentChecker {
     private final DoctorDictRepositoryImpl doctorDictRepository;
     private final TelegramAsyncMessageSender telegramAsyncMessageSender;
     private final GorzdravService gorzdravService;
+    private final ThreadPoolTaskScheduler taskScheduler;
 
-    @Scheduled(fixedDelay = 30000) //Раз в 30 секунд
-    public void checkAndCreateAppointment() {
-        var tasks = taskRepository.findByCompleteStatusAndActiveStatus(false, true);
+    /**
+     * Точка старта. Запускает цикл опроса сразу после готовности приложения.
+     */
+    @EventListener(ApplicationReadyEvent.class)
+    public void startCheckingLoop() {
+        scheduleNextCheck();
+    }
 
-        for (var task : tasks) {
-            log.info("Checking appointment for task {}", task.getId());
-            String lpuId = task.getLpuId();
-            List<Appointment> allAppointments;
-            allAppointments = getAppointments(task, lpuId);
+    /**
+     * Планирует следующий запуск на случайное время (от 20 до 40 секунд)
+     */
+    private void scheduleNextCheck() {
+        long randomDelayMs = ThreadLocalRandom.current().nextLong(20000, 40001);
+        log.debug("Следующий общий круг проверки запланирован через {} сек.", randomDelayMs / 1000.0);
 
-            if (allAppointments == null || allAppointments.isEmpty()) {
-                log.info("No appointments found for task {}", task.getId());
-                continue;
-            }
+        taskScheduler.schedule(
+                this::runCheckAndScheduleNext,
+                Instant.now().plusMillis(randomDelayMs)
+        );
+    }
 
-            String patientId = task.getMedicalCard().getPatientId();
-            AtomicReference<Appointment> appointment = new AtomicReference<>();
-            List<Appointment> hardFilteredList = hardFiltering(allAppointments, task);
-            if (hardFilteredList.isEmpty()) {
-                log.info("Appointment not found for task {} on hard filter. Repeat search again later", task.getId());
-                continue;
-            }
-
-            softFiltering(hardFilteredList, task)
-                    .ifPresentOrElse(
-                            appointment1 -> createAppointmentWithPreferenceTime(task, appointment1, appointment, lpuId,
-                                    patientId),
-                            () -> createAppointmentWithoutPreferenceTime(task, hardFilteredList, appointment, lpuId,
-                                    patientId));
+    /**
+     * Обёртка для безопасного выполнения и обязательного планирования следующего шага
+     */
+    private void runCheckAndScheduleNext() {
+        try {
+            processAllTasksDistributed();
+        } catch (Exception e) {
+            log.error("Критическая ошибка во время круга проверки талонов", e);
+        } finally {
+            scheduleNextCheck();
         }
     }
 
-    private List<Appointment> getAppointments(Task task, String lpuId) {
-        List<Appointment> allAppointments;
+    /**
+     * Главный метод распределения задач по больницам (ЛПУ)
+     */
+    private void processAllTasksDistributed() {
+        var activeTasks = taskRepository.findByCompleteStatusAndActiveStatus(false, true);
+        if (activeTasks.isEmpty()) {
+            log.debug("Нет активных задач для отслеживания.");
+            return;
+        }
+
+        Map<String, List<Task>> tasksByLpu = activeTasks.stream().collect(Collectors.groupingBy(Task::getLpuId));
+        log.info("Запуск проверки. Найдено задач: {}, распределено по ЛПУ: {}", activeTasks.size(), tasksByLpu.size());
+
+        List<CompletableFuture<Void>> futures = tasksByLpu.entrySet().stream()
+                .map(entry -> CompletableFuture.runAsync(() -> processSingleLpuTasks(entry.getKey(), entry.getValue())))
+                .toList();
         try {
-            allAppointments = gorzdravService.getAppointments(lpuId, task.getDoctorId());
-        } catch (ResponseStatusException e) {
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+                    .get(5, TimeUnit.MINUTES);
+        } catch (Exception e) {
+            log.error("Превышен лимит времени ожидания завершения параллельного опроса ЛПУ", e);
+        }
+    }
+
+    /**
+     * Логика обработки задач внутри ОДНОГО конкретного ЛПУ (выполняется изолированно в своем потоке)
+     */
+    private void processSingleLpuTasks(String lpuId, List<Task> tasks) {
+        log.debug("Поток для ЛПУ {} запущен. Задач к обработке: {}", lpuId, tasks.size());
+
+        for (int i = 0; i < tasks.size(); i++) {
+            Task task = tasks.get(i);
+
+            // Если это не первая задача в данном ЛПУ — делаем паузу (Jitter) перед запросом.
+            // Разные ЛПУ идут параллельно, но внутри одного ЛПУ запросы плавно идут друг за другом.
+            if (i > 0) {
+                try {
+                    long delay = ThreadLocalRandom.current().nextLong(1000, 3501); // 1.0 - 3.5 секунды
+                    Thread.sleep(delay);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    log.warn("Опрос для ЛПУ {} был прерван", lpuId);
+                    return;
+                }
+            }
+
+            try {
+                checkSingleTask(task, lpuId);
+            } catch (Exception e) {
+                log.error("Ошибка при проверке задачи ID {} для ЛПУ {}", task.getId(), lpuId, e);
+            }
+        }
+        log.debug("Поток для ЛПУ {} успешно завершил работу.", lpuId);
+    }
+
+    /**
+     * Логика проверки одной задачи
+     */
+    private void checkSingleTask(Task task, String lpuId) {
+        log.info("Checking appointment for task {}", task.getId());
+        List<Appointment> allAppointments = getAppointments(task, lpuId);
+
+        if (allAppointments == null || allAppointments.isEmpty()) {
+            log.info("No appointments found for task {}", task.getId());
+            return;
+        }
+
+        List<Appointment> hardFilteredList = hardFiltering(allAppointments, task);
+        if (hardFilteredList.isEmpty()) {
+            log.info("Appointment not found for task {} on hard filter. Repeat search again later", task.getId());
+            return;
+        }
+
+        String patientId = task.getMedicalCard().getPatientId();
+        java.util.concurrent.atomic.AtomicReference<Appointment> appointment = new java.util.concurrent.atomic.AtomicReference<>();
+
+        softFiltering(hardFilteredList, task).ifPresentOrElse(
+                appointment1 -> createAppointmentWithPreferenceTime(task, appointment1, appointment, lpuId, patientId),
+                () -> createAppointmentWithoutPreferenceTime(task, hardFilteredList, appointment, lpuId, patientId)
+        );
+    }
+
+    private List<Appointment> getAppointments(Task task, String lpuId) {
+        try {
+            return gorzdravService.getAppointments(lpuId, task.getDoctorId());
+        } catch (org.springframework.web.server.ResponseStatusException e) {
+            log.warn("Горздрав вернул ошибку для ЛПУ {} и врача {}", lpuId, task.getDoctorId());
             return null;
         }
-        return allAppointments;
     }
 
     private void createAppointmentWithoutPreferenceTime(Task task, List<Appointment> hardFilteredList,
